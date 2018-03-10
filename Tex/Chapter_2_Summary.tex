@@ -14,14 +14,14 @@
 \begin{equation}
     S = w_1 w_2 w_3 \dots w_n
 \end{equation}
-在语言模型下，该文本序列可判定为句子的概率$P(S)$即为模型的输出，其中$w_i, i\in \{1,2,\dots,n\}$称为文本序列的基本元素，基本元素可以是字，典型的如中文、日文等；也可以是词，如英文、法文等西方语言，也可以是其他人为规定的文本元素。
+在语言模型下，该文本序列可判定为句子的概率$P(S)$即为模型的输出，其中$w_i, i\in \{1,2,\dots,n\}$称为文本序列的基本元素，基本元素可以是字，典型的如中文、日文等；也可以是词，如英文、法文等西方语言；也可以是其他人为规定的文本元素。
 概率$P(S)$可由下式计算：
 \begin{align}
     \label{eq: language model} P(S) &= P(w_1)P(w_2 | w_1)P(w_3 | w_1 w_2)\cdots P(w_n | w_1 w_2 \cdots w_{n-1})\\
     &= \prod_{i=1}^{n}P(w_i | w_1 \cdots w_{i-1})
 \end{align}
 可以看出，计算第$i$个基本元素出现的条件概率
-\subsection{隐马尔科夫模型}
+\subsection{隐马尔可夫模型}
 \subsection{最大熵马尔可夫模型}
 
 \section{支持向量机与决策树}
