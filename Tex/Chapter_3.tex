@@ -21,6 +21,7 @@ A.Krizhevsky和Hinton等人在2012年将CNN应用于ImageNet数据集上，取�
 本章将对词的分布式表示进行介绍，考察循环神经网络的基本结构，对比分析长短时记忆网络及其各种变体的实现，最后在一个具体的命名实体识别任务场景下，讨论基于LSTM-CRF的序列标注框架，并给出针对该任务基于命名实体的额外字符级特征的改进方法，最后设计实验验证改进方法的有效性。
 
 \section{词的分布式表示}
+\subsection{从统计语言模型到神经网络语言模型}
 不论是传统的基于统计的方法还是基于神经网络的方法，进行命名实体识别任务首先要将自然语言词汇转化为模型能够处理的形式，即实值向量。
 最基本的词的向量化表示就是One-hot Representation，其形式为一个维度为词表大小的$\{0, 1\}$向量，设该词在词表中的索引为$i$，则其one-hot向量只在位置$i$上的值为1，其余位置为0。
 这种表示方法有很多缺陷，首先不同的词并不能从其对应的one-hot向量中判别其语义相关程度，它基本不包含词汇的语义信息；其次，获取one-hot向量的方式仅仅是通过建立词表即可，忽略了词汇的上下文特征而完全将词独立对待；最后，这种向量形式显然非常稀疏，在深度神经网络模型中非常容易导致维数灾难。
@@ -35,13 +36,95 @@ A.Krizhevsky和Hinton等人在2012年将CNN应用于ImageNet数据集上，取�
 
 Bengio等人在2003年提出了基于神经概率的语言模型。利用神经网络估计语言模型参数的同时，得到了作为副产品的词向量。
 其基本的思路是，首先赋予每个词一个词特征向量$\Vector{v}(\Vector{v}\in \Set{R}^m)$，$m$为可以设定的词向量维度，如50，100，200等；然后使用这些词特征向量来表示一段文本序列的联合概率函数：
-\begin{equation}
-    
-\end{equation}
 最后在训练过程中，同时更新（学习）词特征向量和概率函数的参数（语言模型参数）。
 
-在此Bengio工作的基础上，谷歌的Tomas Mikolov团队实现了开源工具word2vec，其中使用了两个模型：CBOW（continous bag of word)模型和Skip-gram模型。
-（尽量精略地介绍Hierachical Softmax和Negative Sampling的CBOW和Skip-gram，大概两页？）
+在章节2.1.1中介绍了n元语言模型。语言模型的目标是计算给定序列在该语言下的概率，这个概率通过一系列条件概率的乘积表示：
+\begin{equation}
+    P(w^T_1) = \prod^{T}_{t=1}P(w_t|w_1^{t-1})
+\end{equation}
+其中$T$为序列长度，$w_i^j = (w_i, w_{i+1},\dots, w_j)$。但由于这种计算方式参数过多，后来模型可以简化为序列某时刻词的条件概率只依赖其上文的若干个词（n-gram）：
+\begin{equation}
+    P(w_t|w_1^{t-1}) \approx P(w_t|w^{t-1}_{t-n+1})
+\end{equation}
+通过统计各词序列出现的次数作为条件概率值，填充训练模型参数。
+
+另一种估计模型参数的方法是对模型建立一个目标函数，将参数训练转化为对一个关于模型参数和训练数据的函数优化问题。
+实际中，常使用最大对数似然函数作为目标函数，通过调整其参数获得对数似然函数的最大值，此时得到的就是较为理想的参数。
+\begin{equation}
+    \mathcal{L} = \sum_{c\in C} \log p(w|Context(w))
+\end{equation}
+在语言模型中，关于某时刻词$w$上下文的条件概率可以用$Context(w)$表示。于是其中的条件概率就可以表示为关于词和其上下文的$Context(w)$的函数：
+\begin{equation}
+    p(w|Context(w)) = F(w, Context(w), \theta)
+\end{equation}
+其中$\theta$就是待训练参数集。
+
+在神经语言模型中，获取关于词以其上文为条件的条件概率
+\begin{equation}
+    f(w_t, \dots, w_{t-n+1}) = P(w_t|w_1^{t-1})
+\end{equation}
+被分解为两部分，其一是将词表$V$中的词映射为实值向量的矩阵$\Matrix{C}$，其维度是$|V|\times m$；
+其二是获得条件概率的映射函数$g$，该函数接受序列$w_{t-n+1}^{t-1}$在实值矩阵$C$中的对应各行向量作为输入，输出给定序列下$w_t$是词典中某个词的概率分布。
+于是上面的函数$f$可以进一步表示为：
+\begin{equation}
+    f(i, w_{t-1}, \dots, w_{t-n+1}) = g(i, C(w_{t-1}), \dots, C(w_{t-n+1}))
+\end{equation}
+
+在具体的操作上，模型采用了一个三层神经网络进行参数学习，结构包括输入层、隐藏层和输出层。
+值得注意的是其输入层进行的操作是将词$w$上文$n-1$个词的词向量首尾相连得到特征向量$x_w$输入到隐层中。
+网络使用传统的前后向传播方法进行参数学习，与其他模型不同的是，在后向传播的最后一步，通过计算$\frac{\partial\mathcal{L}}{\partial x}$并取其中相应维度的部分，实现了一次训练之后批量更新作为输入的$n-1$个词向量的过程。
+
+\subsection{Word2Vector基本原理}
+在Bengio工作的基础上，谷歌的Tomas Mikolov团队实现了开源工具word2vec，其中使用了两个模型：CBOW（continous bag of word)模型和Skip-gram模型。
+
+与之前提到的根据上文预测下一个词不同的是，CBOW通过设置一个固定大小的上下文窗口$c$，如设置为2，利用$w_{t-2}, w_{t-1}, w_{t+1}, w_{t+2}$预测当前词$w_t$，Skip-gram则是通过当前词$w_t$预测其上下文。
+神经网络模型将上文词向量连接作为隐层输入，隐层中的激活函数为$tanh$。CBOW同样使用三层的神经网络结构，包括输入层、投影层和输出层，但投影层的输出是通过窗口内$2c$个词向量的和构建的。
+并且CBOW模型中并不存在隐藏层，也就没有激活函数。
+最后，CBOW对输出层进行了较大的改造：通过Huffman树来构造输出层，将求解词关于其上下文的条件概率的问题转化为二分类问题。
+具体来说，输出层构建了一颗包含词典中所有词、并且以这些词为叶子结点的Huffman树。则对于词典中任意一个词，有且仅有一条从根结点出发的路径到达该叶子结点。
+从根结点出发，到达每一个非叶子结点时，都会发生一次二分类。假设给定分类输入$\Vector{x_w}$，对任意一次二分类，分类到右分支称为正类，记作$d^w_i=1$，分类到左分支称为负类，记作$d^w_i=0$，则分类概率分别可定义为：
+\begin{align}
+    p_{right} &= \sigma(x_w^\mathrm{T}\theta) = \dfrac{1}{1+e^{-x^\mathrm{T}\theta}}
+    p_{left} &= 1 - p_{right}
+\end{align}
+其中$\theta$就是需要训练的参数。于是，对于一个给定的词$w$，确定其关于上下文的条件概率的过程，就是根据该词的Huffman编码，得到其路径上每一次二分类分到该类$d^w_i$的概率，并将这些概率乘积：
+\begin{equation}
+    p(w|Context{w}) = \prod^{l(w)}_{j=2}p(d^w_j|\Vector{x_w}, \theta^w_{j-1})
+\end{equation}
+其中$l(w)$是$w$所在结点的深度。最后通过构建目标函数
+\begin{equation}
+    \mathcal{L}(w,j) = (1-d^w_j)\log[\sigma(\Vector{X_w}^\mathrm{T}\theta^w_{j-1})] + d^w_j\log[1-\sigma (\Vector{x_w^\mathrm{T}}\theta^w_{j-1})]
+\end{equation}
+并调整参数使函数值最大化来训练模型。
+
+当确定了$\theta$之后，模型也就确定了。同时在每一次更新参数的过程中，词$w$上下文窗口内的词向量也得到了更新：
+\begin{equation}
+    \Vector{v(\tilde{w})} := \Vector{v(\tilde{w})} + \eta\sum^{l{w}}_{j=2}\dfrac{\partial\mathcal{L}(w,j)}{\partial \Vector(x_w)}
+\end{equation}
+其中$\eta$为$w$对上下文词向量贡献的权重系数。
+
+与CBOW相对的Skip-gram模型则在训练过程上十分类似，只是其模型投影层不再有加和等操作，而只把输入层的结果直接用来构造Huffman树。最后训练的过程则是求$p(Context(w)|w)$。具体就不再赘述。
+
+上述过程称为基于Hierachical Softmax的模型。为了简化训练过程，提高效率并且改善词向量的质量，Mikolov等人又采用Negative Sampling来对模型进行优化，避免了构建较为复杂的Huffman树。
+以CBOW模型为例，其思想是指定一个关于当前词$w$的负样本集$NEG(w)$，采取下面的定义来获得词的正负类别标签，用来取代通过Huffam树获得的分类标签：
+\begin{equation}
+    L^w(\tilde{w}) = \left\{
+        \begin{aligned}
+            1, &\tilde{w} = w;
+            0, &\tilde{w} \neq w;
+        \end{aligned}
+    \right.
+\end{equation}
+则给定训练样本$(Context(x), x)$，通过最大化
+\begin{equation}
+    g(w) = \prod_{u\in\{w\}\cup NEG{w}}p(u|Context(w))
+\end{equation}
+推导得到目标函数
+\begin{equation}
+    \mathcal{L} = \sum_{w\in C}\{\log[\sigma(\Vector{x_w}^\mathrm{T}\theta^w)] + \sum_{u\in NEG(w)}\log[\sigma(-\Vector{x_w}^\mathrm{T}\theta^u)\}
+\end{equation}
+用来训练模型参数。
+
 \section{循环神经网络与长短时记忆网络}
 
 \subsection{循环神经网络}
@@ -94,7 +177,7 @@ GRU存在多种变体，区别在于计算每个门层输出是否使用之前�
 \end{align*}
 
 \section{基于Bi-LSTM-CRF的医案症状术语识别}
-\subsection{引言}
+\subsection{任务背景}
 中医典籍和医案是中国传统医学宝贵的知识财富。
 中医医案经历了长时间的积累，记载了古今众多医者的实证经验和临床诊疗规律。
 这些医案中存在大量的症状信息，这些信息对医者辩证论治、察明证素，进而对证施治起着至关重要的作用；
