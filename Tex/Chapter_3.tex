@@ -30,7 +30,14 @@ A.Krizhevsky和Hinton等人在2012年将CNN应用于ImageNet数据集上，取�
 与one-hot Representation不同的是，分布式表示下的词向量维度不再是词表大小，而是一个相对较低的固定维度。其中的每一个分量也不再是0或者1，而是一个实值。
 这时词汇表可以视作是一个向量空间，词即是空间中的点。
 既然是空间，就可以定义距离，这个距离可以理解为词汇在语义或语法层面上的距离。
-这样词与词之间就不是孤立的了，词在上下文中的语义信息也得到了保留，词向量维度人为可控且远远小于词表大小。
+如图\ref{fig:word_embedding}所示，这样词与词之间就不是孤立的了，词在上下文中的语义信息也得到了保留，词向量维度人为可控且远远小于词表大小。
+
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[width=\textwidth]{word_embedding.png}
+    \caption{词嵌入将词映射到高维空间中的点}
+    \label{fig:word_embedding}
+\end{figure}
 
 估计词向量参数的方法有很多种，包括隐含语义分析（latent semantic analysis, LSA)、隐狄利克雷分布（latent Dirichlet allocation)和利用神经网络的方法。
 
@@ -77,12 +84,26 @@ Bengio等人在2003年提出了基于神经概率的语言模型。利用神经�
 \subsection{Word2Vector基本原理}
 在Bengio工作的基础上，谷歌的Tomas Mikolov团队实现了开源工具word2vec，其中使用了两个模型：CBOW（continous bag of word)模型和Skip-gram模型。
 
-与之前提到的根据上文预测下一个词不同的是，CBOW通过设置一个固定大小的上下文窗口$c$，如设置为2，利用$w_{t-2}, w_{t-1}, w_{t+1}, w_{t+2}$预测当前词$w_t$，Skip-gram则是通过当前词$w_t$预测其上下文。
-神经网络模型将上文词向量连接作为隐层输入，隐层中的激活函数为$tanh$。CBOW同样使用三层的神经网络结构，包括输入层、投影层和输出层，但投影层的输出是通过窗口内$2c$个词向量的和构建的。
+与之前提到的根据上文预测下一个词不同的是，CBOW通过设置一个固定大小的上下文窗口$c$，如设置为2，利用$w_{t-2}, w_{t-1}, w_{t+1}, w_{t+2}$预测当前词$w_t$，Skip-gram则是通过当前词$w_t$预测其上下文。其结构如图\ref{fig:w2v}所示。
+神经网络模型将上文词向量连接作为隐层输入，隐层中的激活函数为$\tanh$。
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[width=\textwidth]{w2v.png}
+    \caption{CBOW与Skip-gram模型示意图}
+    \label{fig:w2v}
+\end{figure}
+CBOW同样使用三层的神经网络结构，包括输入层、投影层和输出层，但投影层的输出是通过窗口内$2c$个词向量的和构建的。
 并且CBOW模型中并不存在隐藏层，也就没有激活函数。
 最后，CBOW对输出层进行了较大的改造：通过Huffman树来构造输出层，将求解词关于其上下文的条件概率的问题转化为二分类问题。
 具体来说，输出层构建了一颗包含词典中所有词、并且以这些词为叶子结点的Huffman树。则对于词典中任意一个词，有且仅有一条从根结点出发的路径到达该叶子结点。
-从根结点出发，到达每一个非叶子结点时，都会发生一次二分类。假设给定分类输入$\Vector{x_w}$，对任意一次二分类，分类到右分支称为正类，记作$d^w_i=1$，分类到左分支称为负类，记作$d^w_i=0$，则分类概率分别可定义为：
+从根结点出发，到达每一个非叶子结点时，都会发生一次二分类。图\ref{fig:hierarchical_softmax}展示了这个过程。
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[width=\textwidth]{hierarchical_softmax.png}
+    \caption{Hierarchical softmax模型}
+    \label{fig:hierarchical_softmax}
+\end{figure}
+假设给定分类输入$\Vector{x_w}$，对任意一次二分类，分类到右分支称为正类，记作$d^w_i=1$，分类到左分支称为负类，记作$d^w_i=0$，则分类概率分别可定义为：
 \begin{align}
     p_{right} &= \sigma(x_w^\mathrm{T}\theta) = \dfrac{1}{1+e^{-x^\mathrm{T}\theta}}
     p_{left} &= 1 - p_{right}
@@ -105,7 +126,7 @@ Bengio等人在2003年提出了基于神经概率的语言模型。利用神经�
 
 与CBOW相对的Skip-gram模型则在训练过程上十分类似，只是其模型投影层不再有加和等操作，而只把输入层的结果直接用来构造Huffman树。最后训练的过程则是求$p(Context(w)|w)$。具体就不再赘述。
 
-上述过程称为基于Hierachical Softmax的模型。为了简化训练过程，提高效率并且改善词向量的质量，Mikolov等人又采用Negative Sampling来对模型进行优化，避免了构建较为复杂的Huffman树。
+上述过程称为基于Hierarchical Softmax的模型。为了简化训练过程，提高效率并且改善词向量的质量，Mikolov等人又采用Negative Sampling来对模型进行优化，避免了构建较为复杂的Huffman树。
 以CBOW模型为例，其思想是指定一个关于当前词$w$的负样本集$NEG(w)$，采取下面的定义来获得词的正负类别标签，用来取代通过Huffam树获得的分类标签：
 \begin{equation}
     L^w(\tilde{w}) = \left\{
@@ -126,160 +147,161 @@ Bengio等人在2003年提出了基于神经概率的语言模型。利用神经�
 用来训练模型参数。
 
 \section{循环神经网络与长短时记忆网络}
-
 \subsection{循环神经网络}
+一般的的神经网络模型中，就其数据流向而言，输入数据是单向传播的，即从输入层到输出层；就其网络结构而言，不同层之间的结点相互连接，但层内结点不存在连接。
+这种网络结构在训练时独立看待每一次输入，其输出也是相互独立的；如果输入之间存在相互存在依赖或明显的相关关系，这些信息就很难学习得到。
+但实际上，对于以序列形式存在的数据而言，如文本、语音等，这种情况是普遍存在的。
+
+循环神经网络就是针对这类数据而提出的模型，它对序列化的数据有很好的适应性。
+RNN的典型特征是，隐藏层中的神经单元存在到自身的连接，即在时域上展开之后，某时刻的结点也与其在前一时刻和后一时刻的状态相连。这样的结构使得模型能够在一定程度上记忆之前输入的信息，即序列中较早时刻输入的元素，也会对模型较晚时刻的输出产生影响。
+
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[width=0.8\textwidth]{RNN.pdf}
+    \caption{RNN基本结构}
+    \label{fig:RNN}
+\end{figure}
+
+一个基本的RNN也可以看作包含输入层、单层隐藏层和输出层。
+对于给定的输入序列$\Tensor{X}=\Vector{x}^n_0$，在每一个时刻，模型的输入是$x_t(x_t \in [0, 1, 2, \dots, n])$。隐层单元将按下式计算当前时刻的隐层状态和输出结果：
+\begin{align}
+    s_t = f(Ux_t + Ws_{t-1})
+    o_t = g(Vs_t)
+\end{align}
+其中$s_t$是$t$时刻的隐层状态，即模型对序列信息保留的记忆；$U$、$W$、$V$分别是输入层与隐层、隐层单元前后时刻和隐层与输出层之间的连接权重参数。
+$f$、$g$是激活函数。
+
+需要说明的是，一般而言我们在讨论RNN时提及的“带有单隐层的RNN”实际上指的是单层RNN单元在时域上展开，因此网络的深度与序列长度有关。
+在这个过程中，$U$、$W$、$V$的权重是共享的，即通过整个序列进行训练。
+训练RNN的过程可转化为训练多层共享权重的前馈神经网络。
+这里的“多层”指的就是RNN隐层在时域上展开后得到的深层神经网络。
+训练时，正向计算目标函数后，反向传播误差时计算每一时刻上的误差，最后根据所有时刻上的导数更新权重。
+这种算法称为Backpropagation through time, BPTT。
+
+但是在计算梯度时，由于序列长度可能很长，展开后的RNN层数可能很深，这样在计算时域上靠前的层的梯度时，就会产生多个导数相乘的形式，若其中存在多个值较小，那么其相乘的结果会迅速收敛到0，这就是“梯度消失”问题。
+
+RNN普遍存在这种问题，从结果上看，这会导致RNN难以处理前后相隔较远的上下文依赖。一个简单的解决方案是替换激活函数，使用ReLu替换sigmoid或$\tanh$。而在RNN的基础上修改其单元的内部实现，比如使用长短时记忆模型（LSTM），则是更有效更普遍的方法。
+
 \subsection{长短时记忆网络及其变体}
-虽然除$t_0$时刻的RNN单元外后续的每个单元接收的输入都带有之前所有时刻信息的累积，但受限于梯度消失问题，相隔较远的时刻输入对参数学习将不会有贡献，导致时域上靠后的单元无法很好地感知靠前的单元，句子内的长程依赖信息就无法被学习。针对这一问题，S.Hochreiter和J.Schmidhuber在1997年提出了LSTM，其本质是使用带有信息存储和更新机制的单元代替RNN中一般的激活单元。信息存储即cell的内部状态，而更新机制则通过一系列“门”实现，包括输入门$i_t$、遗忘门$f_t$和输出门$o_t$。
-一个基本的LSTM实现如图所示。其内部参数可表达为：
-\begin{align*}
-    \Vector{i_t} &= \sigma(\Matrix{W_{hi}}\Vector{h_{t-1}} + \Matrix{W_{xi}}\Vector{x_{t}} + \Vector{b_i})\\
-    \Vector{f_t} &= \sigma(\Matrix{W_{hf}}\Vector{h_{t-1}} + \Matrix{W_{xf}}\Vector{x_{t}} + \Vector{b_f})\\
-    \Vector{o_t} &= \sigma(\Matrix{W_{ho}}\Vector{h_{t-1}} + \Matrix{W_{xo}}\Vector{x_{t}} + \Vector{b_o})\\
-    \Vector{C_t} &= \Vector{f_t}\odot\Vector{C_{t-1}} + \Vector{i_t}\odot tanh(\Matrix{W_{Ch}}\Vector{h_{t-1}} + \Matrix{W_{Cx}}\Vector{x_t} + \Vector{b_{C}})\\
-    \Vector{h_t} &= \Vector{o_t} \odot tanh(\Vector{C_t})
-\end{align*}
-其中$\odot$代表元素乘积，其结果仍是一个高维实向量。
-根据该描述可知，对于某时刻的输入，LSTM层在得到输出之前，
-首先对cell中存储的历史信息$C_{t-1}$进行了处理，通过遗忘门层$f_t$根据上一时刻隐层输出$h_{t-1}$与当前时刻的输入$x_t$，
-控制cell状态中哪些信息将得到保留；
-随后再将更新后的cell状态的激活值与输出门层$o_t$结合得到当前时刻的隐层状态传递下去。
-文献[]给出了LSTM cell的一个改进版本，它在原有LSTM结构的基础上增加了cell状态对遗忘信息的影响，
-称为peep-hole，即在图[]所示LSTM结构基础上增加虚线部分。
+上文已经提及，虽然除$t_0$时刻的RNN单元外后续的每个单元接收的输入都带有之前所有时刻信息的累积，但受限于梯度消失问题，相隔较远的时刻输入对参数学习将不会有贡献，导致时域上靠后的单元无法很好地感知靠前的单元，句子内的长程依赖信息就无法被学习。
+
+针对这一问题，S.Hochreiter和J.Schmidhuber在1997年提出了LSTM，其本质是使用带有信息存储和更新机制的单元代替RNN中相对较为简单的激活单元。信息存储即cell的内部状态，而更新机制则通过一系列“门控单元”实现，包括输入门、遗忘门和输出门。这些“门”会根据参数，对输入、cell状态和输出进行一系列处理，主要是对cell状态的更新进行控制，决定在状态上添加信息（记忆）还是减少信息（遗忘）。
+
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[width=0.8\textwidth]{LSTM-CIFG}
+    \caption{LSTM的一般结构}
+    \label{fig:LSTM}
+\end{figure}
+
+一个基本的LSTM实现如图\ref{fig:LSTM}所示。其内部结构可描述为：
+\begin{align}
+    \Vector{i_t} &= \sigma(\Matrix{W_i}\Vector{x_t} + \Matrix{U_i}\Vector{h_{t-1}} + \Vector{b_i})
+    \label{eq:lstm_i}\\
+    \Vector{f_t} &= \sigma(\Matrix{W_f}\Vector{x_t} + \Matrix{U_f}\Vector{h_{t-1}} + \Vector{b_f})\\
+    \Vector{o_t} &= \sigma(\Matrix{W_o}\Vector{x_t} + \Matrix{U_o}\Vector{h_{t-1}} + \Vector{b_o})\\
+    \Vector{a_t} &= \tanh(\Matrix{W_C}\Vector{x_t} + \Matrix{U_C}\Vector{h_{t-1}} + \Vector{b_C})\\
+    \Vector{C_t} &= \Vector{f_t}\odot\Vector{C_{t-1}} +
+                    \Vector{i_t}\odot\Vector{a}_t
+                    \label{eq:cell state}\\
+    \Vector{h_t} &= \Vector{o_t} \odot \tanh(\Vector{C_t})\label{eq:lstm_C}
+\end{align}
+其中$\odot$代表元素乘积，其结果仍是一个固定维度的实向量。
+
+首先，上一时刻的隐藏层状态$\Vector{h_{t-1}}$和当前时刻的输入词$\Vector{x_t}$经过连接构成了当前时刻的输入信息向量。这一向量将作为所有门控层$sigmoid$激活函数的参数。
+
+而经$\tanh$激活函数获得的激活值$\Vector{a}_t$则是一个临时的状态向量，其中包括了部分应该保留在cell状态中的信息，而其他信息则应该丢弃。
+
+接着门控层根据模型参数和输入向量获得遗忘参数$\Vector{f}_t$和输入参数$\Vector{i}_t$。由式\ref{eq:cell state}可知，当前的cell状态将受到在输入门$\Vector{i}_t$控制下的临时状态向量$\Vector{a}_t$和在遗忘门$\Vector{f}_t$控之下的前一时刻cell状态$\Vector{C}_{t-1}$的共同影响。它们综合决定临时状态与历史状态中哪些信息应该得到保留，哪些信息应该丢弃。最终两部分保留的结果相加确定当前的cell状态。
+
+为了更直观地观察到参数关系与维度，我们引入文献[]给出的形式来表示模型。在式\ref{eq:lstm_i}到\ref{eq:lstm_C}的基础上，设偏置向量$b*$整合进了$x_t$且:
+\begin{align}
+    \hat{\Vector{i}}_t &= \Matrix{W_i}\Vector{x_t} + \Matrix{U_i}\Vector{h_{t-1}}\\
+    \hat{\Vector{f}}_t &= \Matrix{W_f}\Vector{x_t} + \Matrix{U_f}\Vector{h_{t-1}}\\
+    \hat{\Vector{o}}_t &= \Matrix{W_o}\Vector{x_t} + \Matrix{U_o}\Vector{h_{t-1}}\\
+    \hat{\Vector{a}}_t &= \Matrix{W_C}\Vector{x_t} + \Matrix{U_C}\Vector{h_{t-1}}
+\end{align}
+则省略激活函数的情况下，参数可以组织为：
+\begin{equation}
+    \Vector{z}_t =
+    \begin{bmatrix}
+        \hat{\Vector{a}}_t\\
+        \hat{\Vector{i}}_t\\
+        \hat{\Vector{f}}_t\\
+        \hat{\Vector{o}}_t\\
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \Matrix{W}_C & \Matrix{U}_C\\
+        \Matrix{W}_i & \Matrix{U}_i\\
+        \Matrix{W}_f & \Matrix{U}_f\\
+        \Matrix{W}_o & \Matrix{U}_o\\
+    \end{bmatrix}
+    \times
+    \begin{bmatrix}
+        \Vector{x}_t\\
+        \Vector{h}_{t-1}
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \Matrix{W}\times\Matrix{I}_t
+    \end{bmatrix}
+\end{equation}
+若$x_t$为$n$维向量，隐层单元数为$m$，则$\hat{\Vector{a}}_t$，$\hat{\Vector{i}}_t$，$\hat{\Vector{f}}_t$，$\hat{\Vector{o}}_t$对应的权重矩阵$W*$、$U*$维数分别为$m\times n$、$m\times m$。
+于是$W$的维数即为$4m\times(m+n)$。
+
+上述基本的LSTM实现中，cell的历史状态$C_{t-1}$并不能影响遗忘门$\Vector{f}_t$和输入门$\Vector{i}_t$对临时状态$\Vector{a}$和自身信息是否保留的决策。
+因此文献[]给出了LSTM cell的一个改进版本，它在原有LSTM定义的输入向量上扩展了历史cell状态的部分，即在进行遗忘/保留决策时，还需要考虑到历史记忆。
+这一机制称为peep-hole，即在图\ref{fig:LSTM}所示LSTM结构基础上增加虚线部分。
 其内部参数可表示为：
-\begin{align*}
-    \Vector{i_t} &= \sigma(\Matrix{W_{hi}}\Vector{h_{t-1}} + \Matrix{W_{xi}}\Vector{x_{t}} + \Matrix{W_{Ci}}\Vector{C_{t-1}} + \Vector{b_i})\\
-    \Vector{f_t} &= \sigma(\Matrix{W_{hf}}\Vector{h_{t-1}} + \Matrix{W_{xf}}\Vector{x_{t}} + \Matrix{W_{Cf}}\Vector{C_{t-1}} + \Vector{b_f})\\
-    \Vector{o_t} &= \sigma(\Matrix{W_{ho}}\Vector{h_{t-1}} + \Matrix{W_{xo}}\Vector{x_{t}} + \Matrix{W_{Co}}\Vector{C_{t-1}} + \Vector{b_o})\\
-    \Vector{C_t} &= \Vector{f_t}\odot\Vector{C_{t-1}} + \Vector{i_t}\odot tanh(\Matrix{W_{Ch}}\Vector{h_{t-1}} + \Matrix{W_{Cx}}\Vector{x_t} + \Vector{b_{C}})\\
-    \Vector{h_t} &= \Vector{o_t} \odot tanh(\Vector{C_t})
-\end{align*}
-在上述使用peep-hole的LSTM cell的基础上，
-文献[]在命名实体识别任务上还使用了耦合输入-遗忘门（Coupled Input-Forget Gate, CIFG）[]取得了较好的效果，
-即令$\Vector{f_t} = 1 - \Vector{i_t}$，对比LSTM cell简化了CIFG的计算:
-\begin{equation*}
-    \Vector{C_t} = (1 - \Vector{i_t})\odot \Vector{C_{t-1}} + \Vector{i_t}\odot tanh(\Matrix{W_{Cx}}\Vector{x_t} + \Matrix{W_{ch}}\Vector{h_{t-1}} + \Vector{b_C})
-\end{equation*}
+\begin{align}
+    \Vector{i}_t &= \sigma(\Matrix{W_{i}}\Vector{x_{t}} + \Matrix{W_{i}}\Vector{h_{t-1}} + \Matrix{W_{i}}\Vector{C_{t-1}} + \Vector{b_i})\\
+    \Vector{f}_t &= \sigma(\Matrix{W_{f}}\Vector{x_{t}} + \Matrix{W_{f}}\Vector{h_{t-1}} + \Matrix{W_{f}}\Vector{C_{t-1}} + \Vector{b_f})\\
+    \Vector{o}_t &= \sigma(\Matrix{W_{o}}\Vector{x_{t}} + \Matrix{W_{o}}\Vector{h_{t-1}} + \Matrix{W_{o}}\Vector{C_{t-1}} + \Vector{b_o})\\
+    \Vector{a}_t &= \tanh(\Matrix{W_{C}}\Vector{x_t} + \Matrix{W_{C}}\Vector{h_{t-1}} + \Vector{b_{C}})\\
+    \Vector{C}_t &= \Vector{f_t}\odot\Vector{C_{t-1}} + \Vector{i_t}\odot \Vector{a}_t \\
+    \Vector{h}_t &= \Vector{o_t} \odot \tanh(\Vector{C_t})
+\end{align}
+在上述使用peep-hole的LSTM cell的基础上，文献[]在命名实体识别任务上还使用了耦合输入-遗忘门（Coupled Input-Forget Gate, CIFG）[]取得了较好的效果，即令
+\begin{equation}
+    \Vector{f_t} = 1 - \Vector{i_t}
+\end{equation}
+对比LSTM cell简化了CIFG的计算:
+\begin{equation}
+    \Vector{C_t} = (1 - \Vector{i_t})\odot \Vector{C_{t-1}} + \Vector{i_t}\odot \tanh(\Matrix{W_{Cx}}\Vector{x_t} + \Matrix{W_{ch}}\Vector{h_{t-1}} + \Vector{b_C})
+\end{equation}
+
 最后，文献[]提出了一种更为简单的LSTM单元的变体，称为门控循环单元(Gated Recurrent Unit，GRU)。
 GRU存在多种变体，区别在于计算每个门层输出是否使用之前的隐藏状态和偏置。
-本节使用的GRU仅使用隐藏状态计算门层输出，如图3所示。
+本节仅介绍使用隐藏状态计算门层输出的GRU，如图\ref{fig:GRU}所示。
 其最主要的特征是
 \begin{enumerate}
     \item 融合了cell状态和隐藏层输出
     \item 融合了输入门和遗忘门
 \end{enumerate}
+
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[width=0.8\linewidth]{GRU}
+    \caption{GRU基本结构}
+    \label{fig:GRU}
+\end{figure}
 这使得单元相比LSTM更加简单，参数更少，同时实验表明它能够在大部分任务中取得与LSTM相当或更佳的效果。
 其内部参数可表示为：
-\begin{align*}
-    \Vector{z_t} &= \sigma(\Matrix{W_{zx}}\Vector{x_t} + \Matrix{W_{zh}}\Vector{h_{t-1}})\\
-    \Vector{r_t} &= \sigma(\Matrix{W_{rx}}\Vector{x_t} + \Matrix{W_{rh}}\Vector{h_{t-1}})\\
-    \Vector{\tilde{h_t}} &= tanh(\Matrix{W_{\tilde{h}u}}(\Vector{r_t} \odot \Vector{h_{t-1}}) + \Matrix{W_{\tilde{h}x}}\Vector{x_t})\\
+\begin{align}
+    \Vector{z_t} &= \sigma(\Matrix{W_{z}}\Vector{x_t} + \Matrix{W_{z}}\Vector{h_{t-1}})\\
+    \Vector{r_t} &= \sigma(\Matrix{W_{r}}\Vector{x_t} + \Matrix{W_{r}}\Vector{h_{t-1}})\\
+    \Vector{\tilde{h_t}} &= \tanh(\Matrix{W_{\tilde{h}u}}(\Vector{r_t} \odot \Vector{h_{t-1}}) + \Matrix{W_{\tilde{h}x}}\Vector{x_t})\\
     \Vector{h_t} &= (1 - \Vector{z_t}) \odot \Vector{h_{t-1}} + \Vector{z_t} \odot \Vector{\tilde{h_t}}
-\end{align*}
+\end{align}
 
-\section{基于Bi-LSTM-CRF的医案症状术语识别}
-\subsection{任务背景}
-中医典籍和医案是中国传统医学宝贵的知识财富。
-中医医案经历了长时间的积累，记载了古今众多医者的实证经验和临床诊疗规律。
-这些医案中存在大量的症状信息，这些信息对医者辩证论治、察明证素，进而对证施治起着至关重要的作用；
-同时，症状、治法、处方、剂量与预后疗效之间存在的内在联系，也能够反映中医对疾病的诊疗机理。
-若要系统地研究这些诊疗机理，对医案进行结构化处理，挖掘医案文本，寻找其中蕴含的关联规则是一系列必要的任务。
-在医案结构化处理任务中，首要的就是将中医医案文本中对症状具体的描述和长期以来形成的普遍使用的中医症状术语提取出来。
+LSTM存在很多种变体，也有文献系统地对比了多种变体在自然语言处理任务上的性能。本文也将在具体的场景下，对比分析不同的结构对命名实体识别效果的影响。
 
-目前，针对中医医案文本中症状术语的识别存在几个难点。
-首先，中医医案的结构化程度低。
-具体表现为不同年代、不同地域的不同医家个体，其记录医案的结构和习惯均存在不同，导致无法按统一标准进行结构化。
-其次，就医案内容而言，由于存在大量医案年代较为久远，其语言特点与现代汉语也存在较大差异，多为文言文或半文半白，识别难度较大。
-最后，对于需要提取的目标症状描述或症状术语，缺乏统一的规范。
-至今，中医临床常见症状术语尚未有国家标准，中医医案中口语化、症状实体包含、互指现象也十分普遍，加之症状描述本身形式灵活多变，这对识别症状的正确性、完整性提出了更高的要求。
-
-识别中医医案文本中的症状描述或症状术语这一任务实际上就是从医案文本中进行症状实体识别，可以将其视为命名实体识别任务的一种。
-目前对于中医医案症状识别主要使用条件随机场（Conditional Random Field, CRF）方法。
-文献[]从命名实体识别的方法出发，对比了CRF与支持向量机、最大熵模型等常见的命名实体识别方法，指出了CRF在该任务上的有效性，但同时也存在依赖分词和词性标注效果、对超过五个字符的较长实体识别效果较差等局限性。
-文献[]对比了CRF、隐马尔科夫模型和最大熵隐马模型在特定病种的标准病历数据集上对症状、疾病和诱因的识别效果。
-文献[]-[]均采用了CRF方法针对中医领域的文本语料进行命名实体识别，以进行医案结构化、症状等中医术语提取等工作。
-
-本节针对CRF方法特征选择相对复杂，人工标注特征代价相对较高，对语料结构化、标准化程度依赖较大等局限性，提出使用结合神经网络的序列标注框架，
-在以文言文本为主的近代中医医案典籍上进行中医症状术语识别，并根据症状组成要素，添加简单的字符级别特征，在增加较少人工标注成本的前提下，获得更佳的症状识别效果。
-本节将使用不同的LSTM结构进行实验，并对比分析不同结构对实验结果的影响。
-
-\subsection{双向LSTM-CRF序列标注框架}
-单向LSTM能够较好地获取上文信息，使得句子中的历史依赖特征可以保留下来。
-对于一个可能含有症状术语的文本序列$\Tensor{X}$，其$t$时刻的输入为$\Vector{x_t}$，$x_t$为文本序列中单个文字对应的特征向量。
-在未加入症状字特征时，该特征向量为该文字对应的字向量。
-将字向量序列按顺序输入，则LSTM层在$t$时刻的隐层输出$\Vector{\overrightarrow{h_t}}$代表根据包含了上文特征语义信息和当前时刻输入信息得到的字向量表示。
-但传统中医医案中对于症状的描述出现的范围包括证候、诊断（包括复诊、三诊等）、预后疗效、病案分析。
-判定文本序列的某个子序列是典型的症状术语，需要同时考虑上下文携带的信息。
-同理，使用另一个结构相同但参数独立的LSTM层，反向输入给定序列则可得到根据后文特征得到的字向量表示$\Vector{\overleftarrow{h_t}}$。
-将这两部分字向量表示拼接可以得到包含上下文信息的字向量表示$\Vector{h_t} = [\Vector{\overrightarrow{h_t}}, \Vector{\overleftarrow{h_t}}]$。
-
-双向LSTM-CRF序列标注框架中，Bi-LSTM层用来整合提取输入序列的特征，将字向量结合上下文语义信息扩展为向量表示，并在其输出层采用Softmax函数将隐层输出映射到标签集上的概率分布向量。
-文本序列输入完毕后，LSTM层的最终输出为序列中每个字符所述标签的概率分布矩阵。最后，使用CRF层根据LSTM层得到的概率分布矩阵，在所有可行的标签序列空间中确定一个最合理的序列路径，此时序列中每个标签对应的即是相同位置上的字符标签。
-
-\subsection{基于症状要素的字特征}
-考虑到中医症状实体本身还具有很多明显的特征，以这些特征作为锚点，能够快速准确地定位一些出现比较频繁的症状。
-但同时也存在小部分负例，应以文本序列出现的上下文信息判断是否是症状。
-为了考察这些特征对症状识别结果的影响，本节进行了如表1所示下的特征标签分类。
-对于文本序列中的单字，模型使用预训练的字嵌入作为基本特征；额外的症状术语单字，将采用随机初始化获得其表示其标签类型的嵌入向量，与字嵌入连接作为该字符的表示。
-表1所示特征，仅为对标准化的症状词典进行简单的字符频率统计并按照字符表意类型进行分类得到的常见额外字特征。
-\begin{table}[!htbp]
-    \centering
-    \footnotesize
-    \setlength{\tabcolsep}{4pt}
-    \renewcommand{\arraystretch}{1.2}
-    \begin{tabular}{cp{7cm}c}
-        \hline\hline
-        特征种类 & 部分特征关键字 & 特征标签\\
-        \hline
-        自感特征 & 疼、痛、肿、胀、酸、麻 & SF(self feeling)\\
-        \hline
-        身体部位 & 脉、左、右、寸、关、尺、舌、苔、手、身、口、目、眼、耳、足、胸、额、头、脘、腹、唇、齿、胃、面、颊、肢 & BP(body parts)\\
-        \hline
-        颜色形态 & 白、赤、红、滑、腻、溏、稀、干、燥、朱、黑、青、紫、绛、焦、黄 & CS(color shape)\\
-        \hline
-        程度描述 & 稍、微、略、甚、强、大、多、少、无、极、弱 & AD(adverbs of degree) \\
-        \hline
-        排泄物名词 & 便、溲、痰、汗 & EC(ecreta)\\
-        \hline\hline
-    \end{tabular}
-    \caption{症状字特征分类}
-\end{table}
-
-上述特征均是字符级别。
-为了不增加训练语料的人工标注成本，可以在训练语料中进行简单的单字替换获得，作为单独的特征列输入模型。
-最终的标注结果示例如图5所示。
-
-本节将单字特征和预训练的字嵌入进行连接获得的新的字向量表示作为模型输入，这些额外特征将作为字嵌入的扩展，为模型提取特征从而进行症状术语识别提供更具体有效的信息。
-
-
-\subsection{实验设计}
-本节使用的数据集来自中医典籍《全国名医验案类方》，作者为近代名医何廉臣，共计492例医案。
-原医案语料已具有一定的结构特征，单个医案中划分了病因、证候、诊断、疗法等不同项目，但也存在包括医者、病者等无关信息，本节只选取其中证候、诊断、疗法、效果及作为医案评述的“廉按”部分内容作为原始语料，共2959条语料。
-由于典籍中的医案是医者行医记录，虽然在医者已按照既定结构记载，但这些项目中仍存在大量描述和推断，不能完全作为症状实体。
-且记录医案存在一定随意性，症状实体在证候、诊断、疗法、效果和医案评述中均可能出现，故对所有语料参考《中医临床症状术语规范》中六大类37小类共2069条规范症状进行标注。
-考虑到原始语料年代较为久远，部分症状描述可能与现代汉语存在差异，故酌情对语料中频繁出现的部分症状进行了补充标注。
-需要说明的是，文献[1]和[4]的工作已经表明，对于中医医案尤其是使用古代汉语的中医医案语料，对其进行分词效果并不好，因为现有的分词工具多倾向于将无法识别的词语进行单字切分，若以词为粒度进行识别，分词会对结果产生负面影响。
-因此本节利用字符级别特征进行序列标注，对所有语料进行单字切分，并按照BIO标准进行标注，即症状实体起始字标签为“B”，症状实体非起始字为“I”，非症状实体字为“O”。
-由于实验语料规模较小，故本节选取其中30例医案作为测试语料，剩余语料作为训练数据，其中训练集与验证集比例为9:1。
-最后，本节使用Gensim工具利用全部中医医案语料作为训练数据，获得了预训练的字嵌入作为基本特征，字嵌入维度设置为100，基于症状要素的字特征嵌入维度设置为30。
-本节基于是否加入症状字特征和多种LSTM cell实现进行对比实验。实验结果基于标签进行评估。
-
-本节使用隐藏层单元数量为64的双向LSTM，训练语料句子长度最大不超过100个字符。
-为防止过拟合，建立模型时对SLTM的输入层和隐藏层进行随机dropout，保留概率均设置为0.8。
-同时，全连接层L2正则化参数为0,001，全局学习率为0.002。
-
-实验结果表明，基于LSTM-CRF的序列标注模型在中医医案症状识别任务中F1值最好达到了0.78。
-在对中医医案进行序列标注的任务中，提高召回率是一个难点，这与文献[]在相似语料上的实验得出的结论一致。
-在未加入症状字特征的条件下，得益于相对简单的结构和较少的待训练参数，GRU取得了相对较好的识别效果。
-增加症状字特征后，可以看出不同的LSTM实现在标签识别的效果上均有不同程度的提高，说明常见症状字特征对识别结果有一定的积极影响。
-
-另外，CIFG在加入症状字特征后，各标签的召回率和精确率都得到了提高。
-也可以看出，与基线实验相比，LSTM（with peep-hole）、GRU和CIFG三种带有peep-hole实现的单元结构对增加的特征更加敏感，特征对提升它们在症状实体识别任务上的表现具有更明显的作用。
-同时，使用LSTM-CRF序列标注模型相比单纯的CRF能够更好地识别较长的症状术语，改善了CRF对长症状术语不能很好召回的情况[]。
-各方法对测试语料中五字以上长症状术语的识别效果如表3所示。
-
-
+\section{双向LSTM-CRF序列标注框架}
+\subsection{双向LSTM层}
+\subsection{CRF层}
+\section{模型训练与参数调优}
+\subsection{批量训练}
+\subsection{防止过拟合}
 \section{本章小结}
 
-本章在基于LSTM-CRF序列标注模型的基础上，针对中医症状特征添加了部分字符级别的要素特征，在小规模以古汉语为主的中医医案语料上的实验表明，该模型泛化能力更强，且对较长实体的识别效果更好。
-同时，由于中医症状种类繁多，加之古汉语精干灵活的语言特点，该方法也存在召回率较低的缺点。
-因此后续工作将围绕以下几点展开：第一，比较多种不同的标签模式对症状术语识别的效果影响；第二，由于部分症状描述分散于多个短语中，并且存在大量比较（如“六脉俱缓，左关尤甚”）、持续（如“继则全体大热，昼夜不休”）等特征，寻找有效方法利用这些特征也至关重要；最后还需考虑参照症状字典对不标准的症状描述进行聚类，识别时按照标准症状建立自然语言序列与症状的映射关系，便于以后对古医案的结构化。
