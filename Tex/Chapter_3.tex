@@ -299,9 +299,114 @@ LSTM存在很多种变体，也有文献系统地对比了多种变体在自然�
 
 \section{双向LSTM-CRF序列标注框架}
 \subsection{双向LSTM层}
+回顾一下从语言模型和传统的命名实体识别方法到神经语言模型和长短时记忆模型，我们可以发现语言模型从统计字/词共现频数估计序列的条件概率，经典的HMM在马尔可夫假设下估计作为隐藏状态的标签转移概率，神经语言模型同样也是根据上文序列推导下文词语的条件概率。
+这些模型和方法在形式上都有着一个共同的特点，即尽可能地利用上文信息来进行训练和预测。
+
+在序列标注任务下，具体如命名实体识别任务下，真实语境中的命名实体完全可能在语义和语法上同时依赖上下文。如何同时有效地利用待识别序列上下文的信息，这就给模型提出了新的要求。
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{BiLSTM.png}
+    \caption{双向LSTM结构}
+    \label{fig:BiLSTM}
+\end{figure}
+
+在序列正向输入到LSTM中时，LSTM能够很好地“记忆”上文的信息，一个自然的想法是，如果想获取下文的信息，是否可以将序列逆序输入LSTM以达到这个目的。
+文献[][]等已经指出，通过两个结构相同、参数独立的LSTM层分别接受正序、逆序的输入序列，能够较好地同时获取上下文的依赖信息。
+基于双向LSTM-CRF框架的序列标注框架已经在各项序列标注任务上取得了很好的成果，这一方法由于较少依赖人工特征，能够实现端到端的标注，因此在使用神经网络方法的序列标注任务上，该框架已经成为了主流的方法。
+
+具体地，如图\ref{fig:BiLSTM}所示就是一个使用双向LSTM的标注框架。
+其中使用了两层方向不同的LSTM层，对于$t$时刻的输入词向量分别在两层LSTM获得输出$\overrightarrow{\Vector{h}}_t$和$\overleftarrow{\Vector{h}}_t$，分别代表保留了上文信息和下文信息的隐层状态。
+可以对这两层输出进行连接或加和等操作，获得最终的隐层输出。
+
+最后，一般在输出层进行一次Softmax，用来进行一次维度转换，将由两层LSTM获得的包含上下文信息的词特征向量，映射到维度为标签数目的空间中。
+如果单纯使用LSTM做序列标注，则这时的输出就可以理解为当前词属于某标签类别的概率。
+最简单的可以取每个时刻输出的最大值对应的标签，这样就获得了由LSTM标注的标签序列。
 \subsection{CRF层}
+\subsubsection{为什么要使用CRF层}
+除了上下文的信息，对自然语言序列标注还需要结合实际的语言习惯和语法规则。
+这些语法规则表现在标注输出标签之间存在较强的依赖性。
+以BIO标注体系标注命名实体为例，基本元素为字符，B为命名实体起始字，I为命名实体中间字，O为非命名实体字。
+则标签I不应该独立出现，其前面的标签应该为B或I；而就类别而言，表示人名起始字的B-PER后也不应该出现表示地名的中间字标签I-LOC。
+上一节提到，单纯使用LSTM做序列标注时，若简单地选取每一时刻输出的最大概率值对应的标签来构建标签序列的话，就无法考虑这些规则。
+这样就会存在许多输出序列不符合这类规则，影响标注结果。
+
+借用节\ref{chap:HMM}中提到的概念，我们可以理解为：LSTM很好地学习到了作为观察序列的文本的上下文信息，但不能学习到作为隐藏状态的标签的前后约束关系；
+CRF可以很好地学习到标签之间的转移权重（与转移特征函数相关的部分），但其状态特征函数部分，即给定序列获取当前位置标签的概率的部分较难定义，需要依靠人工特征等来建立，而这一部分LSTM能够得出理想结果。
+因此结合双向LSTM-CRF显然是合理的选择。
+\subsubsection{CRF层的工作模式}
+本节将具体介绍BiLSTM-CRF框架在CRF层中的参数与训练。
+
+给定输入序列
+\begin{equation}
+    \Vector{X} = [\Vector{x}_1, \Vector{x}_2,\dots, \Vector{x}_n]<++>
+\end{equation}
+LSTM层在时刻$t$对输入$\Vector{x}_t$的输出为预测$\Vector{x}_t$标签的概率分布向量$\Vector{d}_t$。
+则对整个输入序列$\Vector{X}$，LSTM层输出为
+\begin{equation}
+    \Matrix{P} = [\Vector{d}_1,\Vector{d}_1,\dots,\Vector{d}_n]
+\end{equation}
+$\Matrix{P}$为$n\times k$矩阵，$k$为标签类别数。
+则$\Matrix{P}_{i, j}$表示第$i$个输入是标签$j$的概率。对于一个可能的预测结果序列
+\begin{equation}
+    \Vector{y}=(y_1, y_2,\dots, y_n)
+\end{equation}
+其中$y_t$是$t$时刻的预测标签索引。可定义该预测序列在给定输入序列下的评分：
+\begin{equation}
+    s(\Vector{X},\Vector{y})=\sum^n_{i=0}\Matrix{A}_{y_i,y_{i+1}}+\sum^n_{i=1}P_{i, y_i}
+\end{equation}
+其中$\Matrix{A}$为转移矩阵，即$\Matrix{A}_{i,j}$为标签$i$到标签$j$的转移概率，矩阵$\Matrix{A}$就是CRF层需要学习的参数。
+转移概率中可以学习到标签之间存在的约束。序列$\Vector{y}$实际上是在矩阵$\Matrix{P}$中按照时间顺序选择的一条路径。
+序列概率可由Softmax函数计算：
+\begin{equation}
+    p(\Vector{y}|\Vector{X})=\frac{\exp\{s(\Matrix{X},\Vector{y})\}}{\sum_{\tilde{\Vector{y}}\in Y_{\Matrix{X}}}\exp\{s(\Matrix{X},\tilde{\Vector{y}})\}}
+\end{equation}
+其中$Y_{\Matrix{X}}$是对于输入序列$\Matrix{X}$所有可能出现的预测序列观测值集合。
+若序列$\Vector{y}$是正确的预测结果序列，则在训练过程中需要最大化该序列的对数概率
+\begin{equation}
+    \log(p(\Vector{y}|\Matrix{X})) = s(\Matrix{X},\Vector{y})-\log(\sum_{\tilde{\Vector{y}}\in Y_{\Matrix{X}}}\exp\{s(\Matrix{X},\tilde{\Vector{y}})\})
+\end{equation}
+
+预测过程中，选择预测结果$\Vector{y}*$使得其序列评分最高即可
+\begin{equation}
+    \Vector{y*}=\mathop{\arg\max}_{\tilde{\Vector{y}}\in Y_{\Matrix{X}}} s(\Matrix{X},\Vector{\tilde{y}})
+\end{equation}
 \section{模型训练与参数调优}
 \subsection{批量训练}
+在训练过程中，每输入一定量的训练数据训练模型后，就要对模型参数进行更新。
+参数更新需要根据优化算法计算得到的梯度结果进行。
+优化算法有很多中，包括随机梯度下降（stochastic gradient descent， SGD）、Momentum、Adadelta、Rmsprop等等。
+本质上都是策略不同的梯度下降算法。
+
+以SGD为例，更新参数的时机有两种极端的选择，一种是对每一条训练数据进行一次参数更新，这种策略就是原始的stochastic gradient descent。
+该策略计算速度快，但对于每个数据样本，其能够产生的梯度方向都可能不同，不同的数据样本对参数的更新又可能相互抵消，造成训练震荡，这就导致模型较难收敛到最优点。
+另一种是对所有的训练数据更新一次参数，这种策略内存占用多，计算资源消耗大，但其参数的更新依据的是全样本的特征，获得最优结果相对容易，但选取合适的学习率很难。
+
+一个折衷的方案就是选取一个合适的数据规模，即批尺寸（batch-size），来使用一批规模相对较小的数据来更新参数。这样的一批参数称为mini-batch。
+梯度采用这一批数据的平均梯度，参数的更新由这一批数据共同影响。一定程度上，这种更新策略减少了梯度下降的随机性，同时也减少了计算资源的开销。
+
+本文在实验中也将对这一参数的选择进行简单讨论。
 \subsection{防止过拟合}
+在深度学习中，防止过拟合的方法有很多中。本文主要应用了以下三种，下面进行简单介绍。
+\subsubsection{正则化}
+正则化即在计算目标函数时增加相应参数的正则化项。
+
+设模型参数为$w_i^n$，则L1正则化项为:
+\begin{equation}
+    L_1 = \sum^n_{i=1}\lVert w_i \rVert_1
+\end{equation}
+
+L2正则化项为：
+\begin{equation}
+    L_2 = \sum^n_{i=1}\lVert w_i \rVert_2^2
+\end{equation}
+
+正则化项可以加在输入层、LSTM（包括偏置项）权重参数上。在优化目标函数时，同时也要考虑正则化参数的值，使模型在训练时尽量趋于简单，减少对不必要数据的拟合。
+\subsubsection{Dropout}
+Hinton在文献[]中提出了Dropout方法防止过拟合。其基本思想时在训练时，随机根据给定的概率忽略掉部分神经元。
+
+
+对LSTM使用dropout时，实际上时针对输入层和输出层进行dropout。
+\subsubsection{Early stopping}
+
 \section{本章小结}
 
