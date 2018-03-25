@@ -111,13 +111,12 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
 
 \begin{table}
     \centering
-    \begin{tabular}{cccc}
+    \begin{tabular}{ccc}
         \toprule
-        & & \multicolumn{2}{c}{预测结果}\\
+        \diagbox{真实结果}{预测结果} & 正类 & 负类\\
         \midrule
-        & & 正类 & 负类\\
-        \multirow{2}{*}{\begin{sideways}真实结果\end{sideways}} & 正类 & True Positive(TP) & False Negative{FN}\\
-            & 负类 & False Positive(FP) & True Negative\\
+        正类 & True Positive (TP) & False Negative (FN)\\
+        负类 & False Positive (FP) & True Negative (TN)\\
         \bottomrule
     \end{tabular}
     \caption{混淆矩阵}
@@ -192,5 +191,6 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
 本章在基于LSTM-CRF序列标注模型的基础上，针对中医症状特征添加了部分字符级别的要素特征，在小规模以古汉语为主的中医医案语料上的实验表明，该模型泛化能力更强，且对较长实体的识别效果更好。
 同时，由于中医症状种类繁多，加之古汉语精干灵活的语言特点，该方法也存在召回率较低的缺点。
 因此后续工作将围绕以下几点展开：第一，比较多种不同的标签模式对症状术语识别的效果影响；第二，由于部分症状描述分散于多个短语中，并且存在大量比较（如“六脉俱缓，左关尤甚”）、持续（如“继则全体大热，昼夜不休”）等特征，寻找有效方法利用这些特征也至关重要；最后还需考虑参照症状字典对不标准的症状描述进行聚类，识别时按照标准症状建立自然语言序列与症状的映射关系，便于以后对古医案的结构化。
+
 
 
