@@ -6,26 +6,26 @@
 %-
 \confidential{}% confidential level
 \schoollogo{scale=4.2}{ucas_logo}% university logo
-\title{中国科学院大学学位论文\LaTeX{}模板 {$~^{\pi}\pi^{\pi}$}}% \title[short title for headers]{Long title of thesis}
-\author{莫晃锐}% name of author
-\advisor{刘青泉~研究员~中国科学院力学研究所}% supervisor
+\title{基于神经网络的中文命名实体识别方法研究}% \title[short title for headers]{Long title of thesis}
+\author{李明浩}% name of author
+\advisor{刘忠~教授~中国科学院成都计算机应用研究所}% supervisor
 \advisorsec{}% co-supervisor
 \degree{硕士}% degree
-\degreetype{理学}% degree type
-\major{流体力学}% major
-\institute{中国科学院力学研究所}% institute of author
-\chinesedate{2014~年~6~月}% customized date, 6 for summer and 12 for winter graduation
+\degreetype{工学}% degree type
+\major{计算机软件预理论}% major
+\institute{中国科学院成都计算机应用研究所}% institute of author
+\chinesedate{2018~年~6~月}% customized date, 6 for summer and 12 for winter graduation
 %-
 %-> English titlepage
 %-
-\englishtitle{\LaTeX{} Thesis Template\\ of \\ The University of Chinese Academy of Sciences {$~^{\pi}\pi^{\pi}$}}
-\englishauthor{Huangrui Mo}
-\englishadvisor{Supervisor: Professor Qingquan Liu}
-\englishdegree{Master of Natural Science}% degree type <Doctor|Master> of <Philosophy|Natural Science|Engineering>
+\englishtitle{Chinese Named Entity Recognition Methodology\\Research Based On Neural Networks}
+\englishauthor{Minghao Li}
+\englishadvisor{Supervisor: Professor Zhong Liu}
+\englishdegree{Master of Engineering}% degree type <Doctor|Master> of <Philosophy|Natural Science|Engineering>
 \englishthesistype{thesis}% thesis type <thesis|dissertation>
-\englishmajor{Fluid Mechanics}% major
-\englishinstitute{Institute of Mechanics, Chinese Academy of Sciences}
-\englishdate{June, 2014}% customized date
+\englishmajor{Computer Softwares and Theories}% major
+\englishinstitute{Chengdu Institute of Computer Application, Chinese Academy of Sciences}
+\englishdate{June, 2018}% customized date
 %-
 %-> Create titlepages
 %-
@@ -42,15 +42,45 @@
 \setcounter{page}{1}% set page number
 \pagenumbering{Roman}% set large roman
 
-本文是中国科学院大学学位论文模板ucasthesis的使用说明文档。主要内容为介绍\LaTeX{}文档类ucasthesis的用法，以及如何使用\LaTeX{}快速高效地撰写学位论文。
+命名实体识别作为序列标注任务之一，与分词、词性标注等都是中文自然语言处理的基本任务。
+多个自然语言处理的应用，如信息抽取、信息检索、机器翻译和问答系统等都依赖命名实体识别的结果。
+传统的基于统计学习的方法在命名实体识别任务上取得了不错的结果，已经广泛应用于生产环境中。
+但其性能较为依赖人工特征，如特征模板、领域知识和命名实体词典等。
+随着互联网的普及和发展，大数据背景下，命名实体识别系统也面临着海量无规则、多形态、跨领域文本的新挑战。
 
-\keywords{中国科学院大学，学位论文，\LaTeX{}模板}
+本文主要工作如下：
+
+（1）围绕命名实体识别任务，分析了中文命名实体识别的任务特点，对国内外现有的方法进行了调查研究，考察了基于统计的机器学习方法的原理和效果。
+
+（2）研究了基于神经网络和深度学习的命名实体识别方法，讨论了词向量的训练方法，循环神经网络、长短时记忆网络的结构和不同实现及其与条件随机场的结合方式
+
+（3）基于长短时记忆网络与条件随机场构建了序列标注框架，在以文言文本为主的特定领域语料上进行症状术语识别实验。并在此基础上，针对语料特点，在不增加人工标注成本的同时，制订了额外的字符集别特征，提升了命名实体识别的效果。
+
+（4）在公共领域语料场景下，分析了不同粒度的嵌入向量对命名实体识别结果的影响，并提出了基于字词向量结合的多粒度嵌入、训练和测试语料进行命名实体识别的思路，并通过实验比较了不同粒度的数据集上模型精度、效率的差异。
+
+实验表明，增加症状字特征的症状识别方法提高了框架在特殊领域文言文本上的适应性；结合字词向量的训练方法在保持较高准确率、召回率的同时降低了模型复杂度，对比字粒度方法大幅减少了训练时间。
+\keywords{命名实体识别，长短期记忆，条件随机场}
 %-
 %-> English abstract
 %-
 \chapter{Abstract}
+As one of the sequence labeling tasks, named entity recognition is one of the basic tasks of Chinese natural language processing as well as word segmenting and part-of-speech labeling.
+Multiple applications of natural language processing, such as information extraction, machine translation and question and answer system, are all rely on the good result of named entity recognition.
+Traditional machine learning methods based on statistics obtained pretty good result on named entity recognition and are widely used in production environment.
+However, it's performance depends severely on handcraft features, known as feature templates, region knowledges and named entity dictionary.
+With the popularization and development of network nowadays, in background of big data, new challenges are presented to named entity recognition systems by vast amount of ruleless, various and cross-region free text.
 
-This paper is a help documentation for the \LaTeX{} class ucasthesis, which is  a thesis template for the University of Chinese Academy of Sciences. The main content is about how to use the ucasthesis, as well as how to write thesis efficiently by using \LaTeX{}.
+The main work of this paper are as follows:
 
-\englishkeywords{University of Chinese Academy of Sciences (UCAS), Thesis, \LaTeX{} Template}
+(1) Focused on the task of named entity recognition, the main goal and difficulties of Chinese named entity recognition are carefully analyzed. We studied exsited methods and investigated the priciple and perfomance of thoes based on statistic machine learning.
+
+(2) We studied the methods of named entity reconithion based on neural networks, and discussed the approaches to obtain word embeddings, the structures of recurrent neural networks and long short-term model, different implements of long short-term cell and its combination with conditional random field.
+
+(3) A sequence labeling frame was build based on long short-term and conditional random field. Experiments are implemented on ancient Chinese corpus. Furthermore, we developed character level feature withou extra annotation cost according to the entity structure in the task, thus enhanced the performance of the sequence labeling frame above.
+
+(4) In public corpora, we analyzed the influence on named entity recognition of multiple granularity of embedding vectors. Then we proposed a infrastructure that combines character and word embeddings. Several experiments are presented to show the performance of different granularity of embeddings.
+
+Experiments show that character features enhanced the adaptability of model on ancient Chinese corpora in special region. The combination of charactre and word embeddings obtains similar results while reduces the complexity of model and saves training time comparing to char embedding.
+
+\englishkeywords{Named Entity Recognition, Long Short Term Memory, Conditional Random Fields}
 %---------------------------------------------------------------------------%
