@@ -38,7 +38,7 @@
     \label{fig:medical_case}
 \end{figure}
 
-需要说明的是，文献[]和[]的工作已经表明，对于中医医案尤其是使用古代汉语的中医医案语料，对其进行分词效果并不好，因为现有的分词工具多倾向于将无法识别的词语进行单字切分，若以词为粒度进行识别，分词会对结果产生负面影响。
+需要说明的是，文献\citepns{王世昆2009基于条件随机场的中医命名实体识别}和\citepns{万静2016基于条件随机场的医药领域症状信息抽取}的工作已经表明，对于中医医案尤其是使用古代汉语的中医医案语料，对其进行分词效果并不好，因为现有的分词工具多倾向于将无法识别的词语进行单字切分，若以词为粒度进行识别，分词会对结果产生负面影响。
 因此本节利用字符级别特征进行序列标注，对所有语料进行单字切分，并按照BIO模式进行标注，即症状实体起始字标签为“B”，症状实体非起始字为“I”，非症状实体字为“O”。
 由于实验语料规模较小，故实验中将随机抽取其中30例医案文本作为测试语料，剩余语料作为训练数据，其中训练集与验证集比例为9:1。
 
@@ -57,6 +57,7 @@
     \footnotesize
     \setlength{\tabcolsep}{4pt}
     \renewcommand{\arraystretch}{1.2}
+    \caption{症状字特征分类}
     \begin{tabular}{cp{5cm}c}
         \toprule
         特征种类 & 部分特征关键字 & 特征标签\\
@@ -72,13 +73,12 @@
         排泄物名词 & 便、溲、痰、汗 & EC(ecreta)\\
         \bottomrule
     \end{tabular}
-    \caption{症状字特征分类}
     \label{tab:symptom_cluster}
 \end{table}
 
 上述特征均是字符级别。
 为了不增加训练语料的人工标注成本，可以在训练语料中进行简单的单字替换获得，作为单独的特征列输入模型。
-最终的标注结果示例如图5所示。
+最终的标注结果示例如\ref{fig:character_level_feature}所示。
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{Character-Level-Feature}
@@ -113,6 +113,7 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
 
 \begin{table}
     \centering
+    \caption{混淆矩阵}
     \begin{tabular}{ccc}
         \toprule
         \diagbox{真实结果}{预测结果} & 正类 & 负类\\
@@ -121,7 +122,6 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
         负类 & False Positive (FP) & True Negative (TN)\\
         \bottomrule
     \end{tabular}
-    \caption{混淆矩阵}
     \label{tab:confusion}
 \end{table}
 
@@ -139,6 +139,7 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
 本章分别对基本LSTM单元、带peep-hole机制的LSTM单元、GRU和CIFG四种不同的LSTM实现进行了对比实验，并在此基础上增加了症状字特征，表\ref{tab:tab1}展示了实验的结果。
 \begin{table}[H]
     \centering
+    \caption{加入症状字特征识别效果对比}
     \begin{tabular}{cccccccccc}
         \toprule
             \multirow{2}{*}{Cell} &\multicolumn{3}{c}{Overall} &\multicolumn{3}{c}{B} &\multicolumn{3}{c}{I}\\
@@ -155,13 +156,12 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
                                   & 0.780 & 0.735 & 0.832 & 0.762 & 0.707 & 0.826 & 0.788 & 0.725 & 0.863\\
         \bottomrule
     \end{tabular}
-    \caption{加入症状字特征识别效果对比}
     \label{tab:tab1}
 \end{table}
-其中，标$\*$号行为未加入症状字特征的实验数据。
+其中，标$*$号行为未加入症状字特征的实验数据。
 实验结果表明，基于LSTM-CRF的序列标注模型在中医医案症状识别任务中F1值最好达到了0.78。
 
-在对中医医案进行序列标注的任务中，提高召回率是一个难点，这与文献[]在相似语料上的实验得出的结论一致。
+在对中医医案进行序列标注的任务中，提高召回率是一个难点，这与文献\citepns{王世昆2009基于条件随机场的中医命名实体识别}相似语料上的实验得出的结论一致。
 在未加入症状字特征的条件下，得益于相对简单的结构和较少的待训练参数，GRU取得了相对较好的识别效果。
 增加症状字特征后，可以看出不同的LSTM实现在标签识别的效果上均有不同程度的提高，说明常见症状字特征对识别结果有一定的积极影响。
 
@@ -169,6 +169,7 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
 
 \begin{table}[H]
     \centering
+    \caption{LSTM-CRF对长症状术语的识别效果}
     \begin{tabular}{ccccccc}
         \toprule
             \multirow{2}{*}{Cell} & \multicolumn{3}{c}{B} & \multicolumn{3}{c}{I}\\
@@ -181,12 +182,11 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
         {CIFG} & 0.754&0.645&0.909&0.770&0.643&0.962\\
         \bottomrule
     \end{tabular}
-    \caption{LSTM-CRF对长症状术语的识别效果}
     \label{tab:tab2}
 \end{table}
 另外，CIFG在加入症状字特征后，各标签的召回率和精确率都得到了提高。
 也可以看出，与基线实验相比，LSTM（with peep-hole）、GRU和CIFG三种带有peep-hole实现的单元结构对增加的特征更加敏感，特征对提升它们在症状实体识别任务上的表现具有更明显的作用。
-同时，使用LSTM-CRF序列标注模型相比单纯的CRF能够更好地识别较长的症状术语，改善了CRF对长症状术语不能很好召回的情况[]。
+同时，使用LSTM-CRF序列标注模型相比单纯的CRF能够更好地识别较长的症状术语，改善了CRF对长症状术语不能很好召回的情况\citepns{王世昆2009基于条件随机场的中医命名实体识别}。
 各方法对测试语料中五字以上长症状术语的识别效果如表\ref{tab:tab2}所示。
 
 \section{本章小结}

@@ -168,7 +168,9 @@
     %- Text + Math: Palatino
     %\RequirePackage{palatino}%
 \else% <xelatex> or <lualatex> call system fonts
+    \RequirePackage{xeCJK}
     \RequirePackage{fontspec}% support calling system fonts
+    \setsansfont{Times New Roman}
     %- Font properties: <family> + <weight> + <shape> + <size>
     %- Specify the three default TeX font families: <main>, <sans>, <mono>
     %- \setxxxxfont{<font>}[BoldFont=<font-b>,ItalicFont=<font-i>]%
@@ -181,7 +183,10 @@
     %- the latter is due to \renewcommand*{\familydefault}{\rmdefault}
     %- Sans serif - typefaces without strokes - for headings demanding high readability
     %- examples: Helvetica, Gill Sans, Futura
-    %\setsansfont{Gill Sans MT}% font switches: {\sffamily ...}, \textsf{...}
+    %\setsansfont{Times New Roman}
+    %\setCJKmainfont{SimSun}
+    %\setCJKsansfont{SimHei}
+    % font switches: {\sffamily ...}, \textsf{...}
     %- Monospaced - typefaces with same width - for programming, etc
     %- examples: Rockwell, Andale Mono, Courier
     %\setmonofont{Rockwell}% font switches: {\ttfamily, ...}, \texttt{...}
