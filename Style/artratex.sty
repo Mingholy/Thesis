@@ -170,7 +170,8 @@
 \else% <xelatex> or <lualatex> call system fonts
     \RequirePackage{xeCJK}
     \RequirePackage{fontspec}% support calling system fonts
-    \setsansfont{Times New Roman}
+    \setmainfont{Times New Roman}
+    \setsansfont[NFSSFamily=sf]{Times New Roman}
     %- Font properties: <family> + <weight> + <shape> + <size>
     %- Specify the three default TeX font families: <main>, <sans>, <mono>
     %- \setxxxxfont{<font>}[BoldFont=<font-b>,ItalicFont=<font-i>]%

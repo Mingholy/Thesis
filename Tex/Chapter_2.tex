@@ -36,7 +36,7 @@
 \begin{equation}
     P(w_i|w_{i-1}) = \frac{c(w_{i-1}w_i)}{\sum_{w_i}c(w_{i-1}w_i)}
 \end{equation}
-其中$w_i$是词，$c(w_{i-1}w_i)$是2-gram序列$w_{i-1}w_i$在训练预料中的频数。
+其中$w_i$是词，$c(w_{i-1}w_i)$是2-gram序列$w_{i-1}w_i$在训练语料中的频数。
 最后计算序列条件概率：
 \begin{equation}
     P(S) = \prod_{i=1}^{l+1}P(w_i|w^{i-1}_{i-n+1})
@@ -46,7 +46,7 @@
 对于n元语言模型，存在着两方面的问题。
 我们以中文和2-gram为例进行讨论。
 首先不论是以词为单位还是以字为单位统计2-gram，由于语料总是有限的，无论规模多么庞大的语料总不可能会覆盖每两个词的组合，即一定会有部分2-gram序列$w_p w_q$其经过统计计算得到的$P(w_p|w_q)=0$，于是所有以该2-gram为子序列的文本序列（句子）在该语言模型下的预测概率都将是0。
-这显然不符合实际，因为一句话训练语料未曾出现过，并不代表它不可能出现。
+这显然不符合实际，因为一句话未曾在训练语料出现过，并不代表它不可能出现。
 实际上，这种2-gram存在的数量还很多，导致词-词转移矩阵会非常稀疏，预测的结果也会受到严重影响。
 这一问题称为数据平滑问题，解决这一问题基本思路是给予所有统计概率为0的2-gram以一个较小的非零概率，具体包括加一平滑、古德-图灵法等，限于篇幅，这里就不再详细讨论。
 
@@ -62,14 +62,14 @@
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.6\textwidth]{HMM.png}
-    \caption{HMM模型结构图}
     \label{fig:HMM}
+    \bicaption{HMM模型结构图}{HMM model structure}
 \end{figure}
 设$S=\{s_m|1\leq m \leq M\}$，即存在$M$种隐藏状态；$O=\{o_n|1\leq n\leq N\}$，即存在$N$种可观测到的输出结果，则$\Matrix{A}$中元素$a_{ij}$满足：
 \begin{align}
     a_{ij} &= P(q_t = s_j|q_{t-1} = s_i)\qquad 1\leq i,j \leq M\\
     a_{ij} &\geq 0 \label{eq:norm-1}\\
-    \sum^{N}_{j=1}a_{ij} &= 1 \label{eq:norm-2}\\
+    \sum^{N}_{j=1}a_{ij} &= 1 \label{eq:norm-2}
 \end{align}
 $a_{ij}$称为状态从$s_j$转移到$s_i$的归一化概率（满足式\ref{eq:norm-1}和\ref{eq:norm-2}，下同)。
 
@@ -90,7 +90,7 @@ $a_{ij}$称为状态从$s_j$转移到$s_i$的归一化概率（满足式\ref{eq:
 \begin{align}
     &\forall Q = q_1 q_2 \dots q_T:\nonumber\\
     &\qquad P(O|\mu) = \sum_Q \prod_{t=0}^{T-1}a_{q_t q_{t+1}}b_{q_{t+1}}(O_{t+1})
-    \label{eq:HMM-conditional-probability}\\
+    \label{eq:HMM-conditional-probability}
 \end{align}
 特别地，当$t=0$时，$a_{q_0 q_1}b_{q_1}(O_1) = \pi_{q_1}b_{q_1}(O_1)$。
 
@@ -117,7 +117,7 @@ $a_{ij}$称为状态从$s_j$转移到$s_i$的归一化概率（满足式\ref{eq:
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{MEMM.png}
-    \caption{MEMM模型结构图}
+    \bicaption{MEMM模型结构图}{MEMM model structure}
     \label{fig:MEMM}
 \end{figure}
 
@@ -175,12 +175,12 @@ $\lambda_a$为待估计的特征函数权重，$f_a(o,s)$为二值特征函数�
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{SVM.png}
-    \caption{SVM使用核函数将样本映射到高维空间}
+    \bicaption{SVM使用核函数将样本映射到高维空间}{SVM projects samples to a higher dimension space using kernel functions}
     \label{fig:SVM}
 \end{figure}
 
 可以看出，若核函数取$K(\Vector{x_i}, \Vector{x_j}) = \Vector{x_i}^{\mathrm{T}}\Vector{x_j}$则模型就是线性可分的形式，因此这个核函数也称为线性核。
-除此之外，还有多项式核$K(\Vector{x_i}, \Vector{x_j}) = (\Vector{x_i}^{\mathrm{T}}\Vector{x_j})^d, d>1$，高斯核$K(\Vector{x_i}, \Vector{x_j}) = exp(-\frac{\lVert\Vector{x_i} - \Vector{x_j}\rVert^2}{2\sigma^2})$等，核函数的选择对分类的效果起着至关重要的作用，因此也是一个重要的研究方向。
+除此之外，还有多项式核$K(\Vector{x_i}, \Vector{x_j}) = (\Vector{x_i}^{\mathrm{T}}\Vector{x_j})^d, d>1$，高斯核$K(\Vector{x_i}, \Vector{x_j}) = exp(-{\lVert\Vector{x_i} - \Vector{x_j}\rVert^2}/{2\sigma^2})$等，核函数的选择对分类的效果起着至关重要的作用，因此也是一个重要的研究方向。
 
 \citet{isozaki2002efficient}使用了SVM进行命名实体识别。首先，训练样本中的每一个词都表示为包含15个特征的向量形式，这15个特征是指，以当前词为中心，前后各两个词共五个词各自的词性、词形（大小写）和词典位置（这部分类似one-hot向量）。
 经拼接后得到一个39000多维的特征向量作为词的表示。
@@ -205,13 +205,13 @@ $\lambda_a$为待估计的特征函数权重，$f_a(o,s)$为二值特征函数�
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{CRF.png}
-    \caption{CRF：链式无向图模型}
+    \bicaption{CRF的链式无向图模型}{Chained undirected graph of CRF}
     \label{fig:CRF}
 \end{figure}
 
 条件随机场可以视为是满足一定条件的的马尔可夫网络。在马尔可夫网络中，结点序列的联合概率分布可以表示为图中关于序列结点的所有完全子图（团）的势能函数的乘积。设图中所有团的所有团的集合为$C = \{c|c$是图$G$上的团$\}$，于是有:
 \begin{equation}
-    P(Y) = \dfrac{1}{Z}\prod_{c}\psi_x(Y_c)
+    P(Y) = \frac{1}{Z}\prod_{c}\psi_x(Y_c)
 \end{equation}
 其中$Z$为归一化参数，使结果可以视作概率:
 \begin{equation}
@@ -225,7 +225,7 @@ $\lambda_a$为待估计的特征函数权重，$f_a(o,s)$为二值特征函数�
 \end{equation}
 则可得到公式：
 \begin{equation}
-    P(Y|X) = \dfrac{1}{Z}\prod_i\psi_i(Y_i|X)
+    P(Y|X) = \frac{1}{Z}\prod_i\psi_i(Y_i|X)
 \end{equation}
 而给定观察序列$\Vector{X}$时，某特定标记序列$\Vector{Y}$的概率可定义为：
 \begin{equation}
@@ -233,7 +233,7 @@ $\lambda_a$为待估计的特征函数权重，$f_a(o,s)$为二值特征函数�
 \end{equation}
 则有：
 \begin{equation}
-    P(Y|X) = \dfrac{1}{Z}exp(\sum_j\sum_{i=1}^{n-1}\lambda_j t_j(y_{i+1}, y_i, x, i) + \sum_k\sum_{i=1}^{n}\mu_k s_k(y_i, x, i))
+    P(Y|X) = \frac{1}{Z}exp(\sum_j\sum_{i=1}^{n-1}\lambda_j t_j(y_{i-1}, y_i, x, i) + \sum_k\sum_{i=1}^{n}\mu_k s_k(y_i, x, i))
 \end{equation}
 其中，$t(y_{i-1}, y_i, X, i)$是标签序列中相邻位置标签的转移特征函数，表示给定观察序列$X$时，相邻标签的转移概率；
 $s_k(y_i, X, i)$是标签序列中位置$i$的状态特征函数，表示给定的观察序列$X$对该位置标签的影响；
@@ -253,8 +253,8 @@ $\lambda_j$和$\mu_k$分别是两种特征函数的权重，为模型需要训�
 \begin{equation}
     t_(y_{i-1}, y_i, X, i) = \left\{
         \begin{aligned}
-            1, \qquad if X_i = "Me" and y_{i-1} = L_1, y_i = L_2\\
-            0, \qquad Other
+            1, &\qquad if\quad X_i = "Me"\quad and\quad y_{i-1} = L_1, y_i = L_2\\
+            0, &\qquad Other
         \end{aligned}
     \right.
 \end{equation}
@@ -274,7 +274,7 @@ n元语言模型直接针对语料库中词前缀序列与词的转移概率建�
 
 与n元语言模型的情况类似，HMM也存在自身的局限性。
 HMM模型建立在三个基本假设上，即
-\begin{enumerate}
+\begin{enumerate}[\indent(1)]
     \item 马尔可夫假设(Markov assumption)：后一时刻隐藏的状态仅与当前隐藏时刻的状态相关
     \item 稳定性假设(Stationarity assummption)：状态转移概率与转移发生的时刻无关
     \item 输出独立假设(Output independence assumption)：给定当前时刻的状态时，当前时刻的观测输出与之前的观测输出都无关
@@ -289,11 +289,11 @@ MEMM在HMM的基础上结合了最大熵模型的优点，对序列中的每个�
 且由于MEMM对式\ref{eq:memm}中的每个条件概率可以由通过训练获得的收敛的特征函数权重$\lambda$和正则化因子$Z$直接求得，其求解过程相对独立，参数训练也较快。
 
 但包括MEMM在内的非生成式条件马尔可夫模型，大多存在小概率的标记偏置（label bias）的问题。
-考虑一个观察结果集$O$、状态集$S$、观察序列$X = x_1x_2x_3$和其对应的状态序列$Y = y_1y_2y_3$，若训练得到$y_1$可能的状态集合为$\{s_1, s_2\}$，而$y_2$可能的状态只有$s_3$，这种情况下意味着$P(y_2 = s_3|x_2, y_1) = 1$，因此有:
+考虑一个观察结果集$O$、状态集$S$、观察序列$X = x_1x_2x_3$和其对应的状态序列$Y = y_1y_2y_3$，若训练得到$y_1$可能的状态集合为$\{s_1, s_2\}$，而$y_2$可能的状态只有$s_3$，这种情况下意味着在给定观测结果$x_2$和前一时刻任意取值的状态$y_1$时，条件概率$P(y_2 = s_3|x_2, y_1) = 1$，因此有:
 \begin{equation}
     P(y_2 = s_3|x_2, y_1 = s_1) = P(y_2 = s_3|x_2, y_1 = s_2) = 1
 \end{equation}
-训练语料中，不妨设$P(y_1 = s_1|x_1) < P(y_1 = s_2|x_1)$，则此时序列中标记路径的选择就取决于$P(y_1 = s_1|x_1)$和$P(y_1 = s_2|x_1)$了。
+在训练语料中，不妨设$P(y_1 = s_1|x_1) < P(y_1 = s_2|x_1)$，则此时序列中标记路径的选择就取决于$P(y_1 = s_1|x_1)$和$P(y_1 = s_2|x_1)$了。
 此时不论转移概率$P(y_2 = s_3|y_1 = s_1)$是否比$P(y_2 = s_3|y_1 = s_2)$大，模型都将选择状态路径$s_2s_3\dots$而不考虑实际的观察序列。这就是一个极端情况：若当前状态结点的后继结点只有一个状态，模型将倾向无视观测序列，而以前一时刻状态和下一时刻之间的条件概率作为路径选择依据。
 
 并且，与MEMM类似的条件概率模型还会将序列中对某一时刻状态的决策与之后时刻状态的决策独立对待。这就会出现“前言不搭后语”的情况，模型得出的标记序列可能并不符合真正的语言习惯，或者并不满足作为连续的上下文内部应该存在的依赖。
