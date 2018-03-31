@@ -34,7 +34,7 @@
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{Medical_case.png}
-    \caption{医案原始文本}
+    \bicaption{医案原始文本}{Raw medical case text}
     \label{fig:medical_case}
 \end{figure}
 
@@ -54,7 +54,7 @@
     \footnotesize
     \setlength{\tabcolsep}{4pt}
     \renewcommand{\arraystretch}{1.2}
-    \caption{症状字特征分类}
+    \bicaption{症状字特征分类}{Classes of symptom character features}
     \begin{tabular}{cp{5cm}c}
         \toprule
         特征种类 & 部分特征关键字 & 特征标签\\
@@ -82,7 +82,7 @@
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{Character-Level-Feature}
-    \caption{增加字特征的医案标注文本示例}
+    \bicaption{增加字特征的医案标注文本示例}{Labeled examples of medical case with character features}
     \label{fig:character_level_feature}
 \end{figure}
 
@@ -99,7 +99,7 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{TCM-NER}
-    \caption{双向LSTM-CRF中医医案术语标注框架结构}
+    \bicaption{双向LSTM-CRF中医医案术语标注框架结构}{Traditional Chinese medical case labeling frame based on bi-LSTM-CRF}
     \label{fig:TCM_NER}
 \end{figure}
 
@@ -114,7 +114,7 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
 
 \begin{table}
     \centering
-    \caption{混淆矩阵}
+    \bicaption{混淆矩阵}{Confusion matrix}
     \begin{tabular}{ccc}
         \toprule
         \diagbox{真实结果}{预测结果} & 正类 & 负类\\
@@ -140,7 +140,7 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
 本章分别对基本LSTM单元、带peep-hole机制的LSTM单元、GRU和CIFG四种不同的LSTM实现进行了对比实验，并在此基础上增加了症状字特征，表\ref{tab:tab1}展示了实验的结果。
 \begin{table}[H]
     \centering
-    \caption{加入症状字特征识别效果对比}
+    \bicaption{加入症状字特征识别效果对比}{Comparison on recognition results with or without character features}
     \begin{tabular}{cccccccccc}
         \toprule
             \multirow{2}{*}{Cell} &\multicolumn{3}{c}{Overall} &\multicolumn{3}{c}{B} &\multicolumn{3}{c}{I}\\
@@ -170,7 +170,7 @@ LSTM层获取序列上下文特征，CRF层通过以上下文特征作为状态�
 
 \begin{table}[H]
     \centering
-    \caption{LSTM-CRF对长症状术语的识别效果}
+    \bicaption{LSTM-CRF对长症状术语的识别效果}{Long symptom recognition results using LSTM-CRF}
     \begin{tabular}{ccccccc}
         \toprule
             \multirow{2}{*}{Cell} & \multicolumn{3}{c}{B} & \multicolumn{3}{c}{I}\\

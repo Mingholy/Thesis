@@ -187,13 +187,6 @@ RNN普遍存在这种问题，从结果上看，这会导致RNN难以处理前�
 上文已经提及，虽然除$t_0$时刻的RNN单元外后续的每个单元接收的输入都带有之前所有时刻信息的累积，但受限于梯度消失问题，相隔较远的时刻输入对参数学习将不会有贡献，导致时域上靠后的单元无法很好地感知靠前的单元，句子内的长程依赖信息就无法被学习。
 
 针对这一问题，S.Hochreiter和J.Schmidhuber\citep{hochreiter1997long} 在1997年提出了LSTM，其本质是使用带有信息存储和更新机制的单元代替RNN中相对较为简单的激活单元。信息存储即cell的内部状态，而更新机制则通过一系列“门控单元”实现，包括输入门、遗忘门和输出门。这些“门”会根据参数，对输入、cell状态和输出进行一系列处理，主要是对cell状态的更新进行控制，决定在状态上添加信息（记忆）还是减少信息（遗忘）。
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{LSTM-CIFG}
-    \bicaption{LSTM的一般结构}{Common structure of LSTM}
-    \label{fig:LSTM}
-\end{figure}
-
 
 一个基本的LSTM实现如图\ref{fig:LSTM}所示。其内部结构可描述为：
 \begin{align}
@@ -208,6 +201,13 @@ RNN普遍存在这种问题，从结果上看，这会导致RNN难以处理前�
     \Vector{h}_t &= \Vector{o}_t \odot \tanh(\Vector{C}_t)\label{eq:lstm_C}
 \end{align}
 其中$\odot$代表元素乘积，其结果仍是一个固定维度的实向量。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{LSTM-CIFG}
+    \bicaption{LSTM的一般结构}{Common structure of LSTM}
+    \label{fig:LSTM}
+\end{figure}
 
 首先，上一时刻的隐藏层状态$\Vector{h}_{t-1}$和当前时刻的输入词$\Vector{x}_t$经过连接构成了当前时刻的输入信息向量。这一向量将作为所有门控层\verb|sigmoid|激活函数的参数。
 
