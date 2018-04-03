@@ -61,7 +61,7 @@
 其中，$S$为隐藏状态的集合，$K$为可能输出结果集合，$\Matrix{A}$、$\Matrix{B}$、$\Matrix{\pi}$分别是隐藏状态的转移概率矩阵、隐藏状态到输出结果的概率分布矩阵和隐藏状态的初始概率分布。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{HMM.png}
+    \includegraphics[width=0.8\textwidth]{HMM}
     \label{fig:HMM}
     \bicaption{HMM模型结构图}{HMM model structure}
 \end{figure}
@@ -116,7 +116,7 @@ $a_{ij}$称为状态从$s_j$转移到$s_i$的归一化概率（满足式\ref{eq:
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{MEMM.png}
+    \includegraphics[width=0.8\textwidth]{MEMM}
     \bicaption{MEMM模型结构图}{MEMM model structure}
     \label{fig:MEMM}
 \end{figure}
@@ -170,7 +170,7 @@ $\lambda_a$为待估计的特征函数权重，$f_a(o,s)$为二值特征函数�
     g(\Vector{x}) &= \Vector{w}^{\mathrm{T}}\Vector{x} + b\\
     &= \sum_{i = 1}^m w_i K(\Vector{x}, \Vector{x_i}) + b
 \end{align}
-其中$K(\Vector{x}, \Vector{x_i})$为核函数，它的作用是将样本空间映射到一个线性可分的空间，从而将线性不可分的问题转化成线性可分的问题，再求解超平面实现分类。
+其中$K(\Vector{x}, \Vector{x_i})$为核函数，它的作用是将样本空间映射到一个线性可分的空间，从而将线性不可分的问题转化成线性可分的问题，再求解超平面实现分类，如图\ref{fig:SVM}\citep{alisneakysvm}所示。
 
 \begin{figure}[H]
     \centering
@@ -204,7 +204,7 @@ $\lambda_a$为待估计的特征函数权重，$f_a(o,s)$为二值特征函数�
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{CRF.png}
+    \includegraphics[width=0.8\textwidth]{CRF}
     \bicaption{CRF的链式无向图模型}{Chained undirected graph of CRF}
     \label{fig:CRF}
 \end{figure}

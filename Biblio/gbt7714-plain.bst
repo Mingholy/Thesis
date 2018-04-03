@@ -8,7 +8,7 @@
 %% 
 %% Copyright (C) 2016-2018 by Zeping Lee <zepinglee AT gmail.com>
 %% 
-%% This file may be distributed and/or modified under the
+%% This file may <b></b>e distributed and/or modified under the
 %% conditions of the LaTeX Project Public License, either
 %% version 1.2 of this license or (at your option) any later
 %% version. The latest version of this license is in:
@@ -335,7 +335,7 @@ FUNCTION {is.in.chinese}
 FUNCTION {format.et.al}
 { is.in.chinese
     { "等"}
-    { "et~al." }
+    { "et~al."}
   if$
 }
 
@@ -346,38 +346,35 @@ FUNCTION {format.anonymous}
   if$
 }
 
-INTEGERS { nameptr namesleft numnames name.lang}
+INTEGERS { nameptr namesleft numnames name.lang }
 
 FUNCTION {format.names}
 { 's :=
   #1 'nameptr :=
   s num.names$ 'numnames :=
   numnames 'namesleft :=
-    { namesleft #0 > nameptr #4 < and }
+    { namesleft #0 > }
     { s nameptr "{vv~}{ll}{, jj}{, ff}" format.name$ 't :=
-      t get.str.lang 'name.lang :=
-      name.lang lang.en =
-        { t #1 "{vv~}{ll}{ f{~}}" format.name$ "u" change.case$
-          t #1 "{, jj}" format.name$ *
-          't :=
+      nameptr #4 =
+        { format.et.al
+          #1 'namesleft :=
         }
-        { t #1 "{ll}{ff}" format.name$ 't := }
-      if$
-      nameptr #1 >
-        { namesleft #1 >
-            { ", " * t * }
-            { t "others" =
-                { ", " * format.et.al * }
-                { ", " * t * }
+        { t "others" =
+            { format.et.al }
+            { t get.str.lang 'name.lang :=
+              name.lang lang.en =
+                { t #1 "{vv~}{ll}{ f{~}}" format.name$ "u" change.case$
+                  t #1 "{, jj}" format.name$ *
+                }
+                { t #1 "{ll}{ff}" format.name$ }
               if$
             }
           if$
-          nameptr #3 = namesleft #1 > and
-            { ", " * format.et.al * }
-            'skip$
-          if$
         }
-        't
+      if$
+      nameptr #1 >
+        { ", " swap$ * * }
+        'skip$
       if$
       nameptr #1 + 'nameptr :=
       namesleft #1 - 'namesleft :=
@@ -1420,7 +1417,7 @@ FUNCTION {format.lab.names}
     { t #1 "{ll}{ff}" format.name$}
   if$
   s num.names$ #1 >
-    { "\ " * format.et.al * }
+    { "\ " * "等" * }
     'skip$
   if$
 }
