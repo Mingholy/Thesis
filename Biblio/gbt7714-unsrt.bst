@@ -1419,7 +1419,7 @@ FUNCTION {format.lab.names}
     { t #1 "{ll}{ff}" format.name$}
   if$
   s num.names$ #1 >
-    { "\ " * format.et.al * }
+    { "\ " * "等" * }
     'skip$
   if$
 }
