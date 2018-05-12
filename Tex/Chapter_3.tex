@@ -39,7 +39,7 @@
 与one-hot representation不同的是，分布式表示下的词向量维度不再是词表大小，而是一个相对较低的固定维度。其中的每一个分量也不再是0或者1，而是一个实值。
 这时词汇表可以视作是一个向量空间，词即是空间中的点。
 既然是空间，就可以定义距离，这个距离可以理解为词汇在语义或语法层面上的距离。
-如图\ref{fig:word_embedding}\citet{shanelynnwordembedding}所示，这样词与词之间就不是孤立的了，词在上下文中的语义信息也得到了保留，词向量维度人为可控且远远小于词表大小。
+如图\ref{fig:word_embedding}\citep{shanelynnwordembedding}所示，这样词与词之间就不是孤立的了，词在上下文中的语义信息也得到了保留，词向量维度人为可控且远远小于词表大小。
 
 估计词向量参数的方法有很多种，包括隐含语义分析（latent semantic analysis, LSA)、隐狄利克雷分布（latent Dirichlet allocation)和利用神经网络的方法。
 
@@ -163,7 +163,7 @@ RNN的典型特征是，隐藏层中的神经单元存在到自身的连接，�
     \label{fig:RNN}
 \end{figure}
 
-一个基本的RNN也可以看作包含输入层、单层隐藏层和输出层。
+一个基本的RNN也可以看作包含输入层、单层隐藏层和输出层，其基本结构可如图\ref{fig:RNN}所示。
 对于给定的输入序列$\Tensor{X}=\Vector{x}^n_0$，在每一个时刻，模型的输入是$\Vector{x}_t(t \in [0, 1, 2, \dots, n])$。隐层单元将按下式计算当前时刻的隐层状态和输出结果：
 \begin{align}
     \Vector{s}_t &= f(\Matrix{U}\Vector{x}_t + \Matrix{W}\Vector{s}_{t-1})\\
@@ -215,7 +215,7 @@ RNN普遍存在这种问题，从结果上看，这会导致RNN难以处理前�
 
 接着门控层根据模型参数和输入向量获得遗忘参数$\Vector{f}_t$和输入参数$\Vector{i}_t$。由式\ref{eq:cell state}可知，当前的cell状态将受到在输入门$\Vector{i}_t$控制下的临时状态向量$\Vector{a}_t$和在遗忘门$\Vector{f}_t$控之下的前一时刻cell状态$\Vector{C}_{t-1}$的共同影响。它们综合决定临时状态与历史状态中哪些信息应该得到保留，哪些信息应该丢弃。最终两部分保留的结果相加确定当前的cell状态。
 
-为了更直观地观察到参数关系与维度，我们引入文献\citep{arunmallyaLSTM}给出的形式来表示模型。在式\ref{eq:lstm_i}到\ref{eq:lstm_C}的基础上，设偏置向量$\Vector{b}*$整合进了$\Vector{x}_t$且:
+为了更直观地观察到参数关系与维度，我们引入文献\citepns{arunmallyaLSTM}给出的形式来表示模型。在式\ref{eq:lstm_i}到\ref{eq:lstm_C}的基础上，设偏置向量$\Vector{b}*$整合进了$\Vector{x}_t$且:
 \begin{align}
 \hat{\Vector{i}}_t &= \Matrix{W}_i\Vector{x}_t + \Matrix{U}_i\Vector{h}_{t-1}\\
     \hat{\Vector{f}}_t &= \Matrix{W}_f\Vector{x}_t + \Matrix{U}_f\Vector{h}_{t-1}\\
@@ -252,7 +252,7 @@ RNN普遍存在这种问题，从结果上看，这会导致RNN难以处理前�
 于是$W$的维数即为$4m\times(m+n)$。
 
 上述基本的LSTM实现中，cell的历史状态$\Vector{C}_{t-1}$并不能影响遗忘门$\Vector{f}_t$和输入门$\Vector{i}_t$对临时状态$\Vector{a}$和自身信息是否保留的决策。
-因此文献\citep{sak2014long}给出了LSTM cell的一个改进版本，它在原有LSTM定义的输入向量上扩展了历史cell状态的部分，即在进行遗忘/保留决策时，还需要考虑到历史记忆。
+因此文献\citepns{sak2014long}给出了LSTM cell的一个改进版本，它在原有LSTM定义的输入向量上扩展了历史cell状态的部分，即在进行遗忘/保留决策时，还需要考虑到历史记忆。
 这一机制称为peep-hole，即在图\ref{fig:LSTM}所示LSTM结构基础上增加虚线部分。
 其内部参数可表示为：
 \begin{align}
@@ -263,7 +263,7 @@ RNN普遍存在这种问题，从结果上看，这会导致RNN难以处理前�
     \Vector{C}_t &= \Vector{f}_t\odot\Vector{C}_{t-1} + \Vector{i}_t\odot \Vector{a}_t \\
     \Vector{h}_t &= \Vector{o}_t \odot \tanh(\Vector{C}_t)
 \end{align}
-在上述使用peep-hole的LSTM cell的基础上，文献\citep{lample2016neural}在命名实体识别任务上还使用了耦合输入-遗忘门（Coupled Input-Forget Gate, CIFG）取得了较好的效果，即令
+在上述使用peep-hole的LSTM cell的基础上，文献\citepns{lample2016neural}在命名实体识别任务上还使用了耦合输入-遗忘门（Coupled Input-Forget Gate, CIFG）取得了较好的效果，即令
 \begin{equation}
     \Vector{f}_t = 1 - \Vector{i}_t
 \end{equation}
@@ -272,7 +272,7 @@ RNN普遍存在这种问题，从结果上看，这会导致RNN难以处理前�
     \Vector{C}_t = (1 - \Vector{i}_t)\odot \Vector{C}_{t-1} + \Vector{i}_t\odot \tanh(\Matrix{W}_{Cx}\Vector{x}_t + \Matrix{W}_{ch}\Vector{h}_{t-1} + \Vector{b}_C)
 \end{equation}
 
-文献\citep{cho2014learning}提出了一种更为简单的LSTM单元的变体，称为门控循环单元(Gated Recurrent Unit，GRU)。
+文献\citepns{cho2014learning}提出了一种更为简单的LSTM单元的变体，称为门控循环单元(Gated Recurrent Unit，GRU)。
 GRU存在多种变体，区别在于计算每个门层输出是否使用之前的隐藏状态和偏置。
 本节仅介绍使用隐藏状态计算门层输出的GRU，如图\ref{fig:GRU}所示。
 其最主要的特征是
@@ -314,7 +314,7 @@ LSTM存在很多种变体，也有文献系统地对比了多种变体在自然�
 
 基于双向LSTM-CRF框架的序列标注框架已经在各项序列标注任务上取得了很好的成果，这一方法由于较少依赖人工特征，能够实现端到端的标注，因此在使用神经网络方法的序列标注任务上，该框架已经成为了主流的方法。
 在序列正向输入到LSTM中时，LSTM能够很好地“记忆”上文的信息，一个自然的想法是，如果想获取下文的信息，是否可以将序列逆序输入LSTM以达到这个目的。
-文献\citep{huang2015bidirectional, ma2016end}等已经指出，通过两个结构相同、参数独立的LSTM层分别接受正序、逆序的输入序列，能够较好地同时获取上下文的依赖信息。
+文献\citepns{huang2015bidirectional, ma2016end}等已经指出，通过两个结构相同、参数独立的LSTM层分别接受正序、逆序的输入序列，能够较好地同时获取上下文的依赖信息。
 
 具体地，如图\ref{fig:BiLSTM}所示就是一个使用双向LSTM的标注框架。
 其中使用了两层方向不同的LSTM层，对于$t$时刻的输入词向量分别在两层LSTM获得输出$\overrightarrow{\Vector{h}}_t$和$\overleftarrow{\Vector{h}}_t$，分别代表保留了上文信息和下文信息的隐层状态。
@@ -402,7 +402,7 @@ L2正则化项为：
 
 正则化项可以加在输入层、LSTM（包括偏置项）权重参数上。在优化目标函数时，同时也要考虑正则化参数的值，使模型在训练时尽量趋于简单，减少对不必要数据的拟合。
 \subsubsection{Dropout}
-Hinton等在文献\citep{srivastava2014dropout}中提出了Dropout方法防止过拟合。其基本思想是神经网络在拟合一个模型的时候，神经元之间会产生复杂的共同适应性。但神经元在训练时不应依赖其他特定的神经元，因此需要随机去除一些神经元，使得网络结构看起来像是随机生成的，训练过程类似是对多种不同的神经网络训练结果进行了综合，由于不同网络过拟合的方式不同，因此综合不同网络的结果在一定程度上可以消除这些过拟合。在实现中的做法是，随机根据给定的概率忽略掉部分神经元，被忽略掉的神经元的输出为0。这样做可以增强模型的鲁棒性，减少过拟合情况，但同时也会增加训练的时间。
+Hinton等在文献\citepns{srivastava2014dropout}中提出了Dropout方法防止过拟合。其基本思想是神经网络在拟合一个模型的时候，神经元之间会产生复杂的共同适应性。但神经元在训练时不应依赖其他特定的神经元，因此需要随机去除一些神经元，使得网络结构看起来像是随机生成的，训练过程类似是对多种不同的神经网络训练结果进行了综合，由于不同网络过拟合的方式不同，因此综合不同网络的结果在一定程度上可以消除这些过拟合。在实现中的做法是，随机根据给定的概率忽略掉部分神经元，被忽略掉的神经元的输出为0。这样做可以增强模型的鲁棒性，减少过拟合情况，但同时也会增加训练的时间。
 
 对LSTM使用dropout时，主要针对输入层和输出层进行dropout。
 \subsubsection{Early stopping}

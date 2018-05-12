@@ -71,7 +71,7 @@
 实验表明，使用上述方法得到的预训练词向量进行命名实体识别任务均对其识别效果有较大提升。
 值得注意的是，得到该结果所使用的词向量只需要大量无标签的数据即可训练获得，省去了大量构建人工特征和标注语料集的成本，并且还能够获取更多的先验知识。
 
-上述将词的one-hot向量转化为高维实向量的词嵌入的方法，是基于词的上下文窗口的；在此之前，已有\citet{bengio2003neural}、\citet{mikolov2010recurrent}提出了从大规模语料中获得词的分布式表示的方法。\citet{mikolov2013distributed, mikolov2013efficient}在2013年提出的word2vec得到了广泛应用。
+上述将词的one-hot向量转化为高维实向量的词嵌入的方法，是基于词的上下文窗口的；在此之前，已有\citet{bengio2003neural}、\citet{mikolov2010recurrent}提出了从大规模语料中获得词的分布式表示的方法。\citet{mikolov2013distributed,mikolov2013efficient}在2013年提出的word2vec得到了广泛应用。
 
 \citet{wu2015study}使用上述两种方法获得的词向量作为特征输入层，训练了一个神经网络进行命名实体识别，在临床医学文本i2b2数据集和SemEval数据集上取得了F值82.8\%和72.1\%的成果。
 

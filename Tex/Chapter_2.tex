@@ -58,7 +58,7 @@
 \begin{equation}
     \mu =(S, K, \Matrix{A}, \Matrix{B}, \Matrix{\pi})
 \end{equation}
-其中，$S$为隐藏状态的集合，$K$为可能输出结果集合，$\Matrix{A}$、$\Matrix{B}$、$\Matrix{\pi}$分别是隐藏状态的转移概率矩阵、隐藏状态到输出结果的概率分布矩阵和隐藏状态的初始概率分布。
+其中，$S$为隐藏状态的集合，$K$为可能输出结果集合，$\Matrix{A}$、$\Matrix{B}$、$\Matrix{\pi}$分别是隐藏状态的转移概率矩阵、隐藏状态到输出结果的概率分布矩阵和隐藏状态的初始概率分布。一个典型的HMM模型结构可如图\ref{fig:HMM}所示。
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{HMM}
@@ -113,6 +113,7 @@ $a_{ij}$称为状态从$s_j$转移到$s_i$的归一化概率（满足式\ref{eq:
 具体来说，在训练过程中，HMM给定观察结果$o$，调节模型$\mu$的参数使得$P(o|\mu)$最大，并且由于隐藏状态是不可观测的，需要使用EM算法训练参数；
 而MEMM则是给定观察结果$o$和当前的隐藏状态$s$，调节模型参数使得$P(s|o,\mu)$最大。
 在解码（预测）过程中，HMM计算$S$使得$P(O|S,\mu)$最大，MEMM计算$S$使得$P(S|O,\mu)$最大。
+MEMM模型基本结构如图\ref{fig:MEMM}所示。
 
 \begin{figure}[H]
     \centering
@@ -200,7 +201,7 @@ $\lambda_a$为待估计的特征函数权重，$f_a(o,s)$为二值特征函数�
     p(Y_v|X, Y_w, w\neq v) = p(Y_v|X,Y_w,w~v)
     \label{eq:Markov-in-CRF}
 \end{equation}
-其中$w~v$表示$w$和$v$为图中的邻接结点。则$(X, Y)$构成一个条件随机场。针对命名实体识别这类序列标注问题，一般可以令$G$为链式结构，即构成线性链式条件随机场。
+其中$w~v$表示$w$和$v$为图中的邻接结点。则$(X, Y)$构成一个条件随机场。针对命名实体识别这类序列标注问题，一般可以令$G$为链式结构，即构成线性链式条件随机场。一个典型线性链式条件随机场的无向图表示可如图\ref{fig:CRF}表示。
 
 \begin{figure}[H]
     \centering
