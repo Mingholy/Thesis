@@ -336,6 +336,7 @@ LSTM存在很多种变体，也有文献系统地对比了多种变体在自然�
 CRF可以很好地学习到标签之间的转移权重（与转移特征函数相关的部分），但其状态特征函数部分，即给定序列获取当前位置标签的概率的部分较难定义，需要依靠人工特征等来建立，而这一部分LSTM能够得出理想结果。
 因此结合双向LSTM-CRF显然是合理的选择。
 \subsubsection{CRF层的工作原理}
+\label{sssection:CRF}
 本节将简单介绍BiLSTM-CRF框架在CRF层中的参数与训练过程。
 
 给定输入序列
@@ -371,6 +372,7 @@ $\Matrix{P}$为$n\times k$矩阵，$k$为标签类别数。
 预测过程中，选择预测结果$\Vector{y}*$使得其序列评分最高即可
 \begin{equation}
     \Vector{y*}=\mathop{\arg\max}_{\tilde{\Vector{y}}\in Y_{\Matrix{X}}} s(\Matrix{X},\Vector{\tilde{y}})
+    \label{eq:CRF_predict}
 \end{equation}
 \section{模型训练与参数调优}
 \subsection{批量训练}
