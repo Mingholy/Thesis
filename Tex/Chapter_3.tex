@@ -60,7 +60,7 @@ Bengio等人在2003年提出了基于神经概率的语言模型。利用神经�
 另一种估计模型参数的方法是对模型建立一个目标函数，将参数训练转化为对一个关于模型参数和训练数据的函数优化问题。
 实际中，常使用最大对数似然函数作为目标函数，通过调整其参数获得对数似然函数的最大值，此时得到的就是较为理想的参数。
 \begin{equation}
-    \mathcal{L} = \sum_{c\in C} \log p(w|Context(w))
+    \mathcal{L} = \sum_{c\in C} \log p(w|Context (w))
 \end{equation}
 在语言模型中，关于某时刻词$w$上下文的条件概率可以用$Context(w)$表示。于是其中的条件概率就可以表示为关于词和其上下文的$Context(w)$的函数：
 \begin{equation}
@@ -139,11 +139,11 @@ CBOW同样使用三层的神经网络结构，包括输入层、投影层和输�
 \end{equation}
 则给定训练样本$(Context(x), x)$，通过最大化
 \begin{equation}
-    g(w) = \prod_{u\in\{w\}\cup NEG{w}}p(u|Context(w))
+    g(w) = \prod_{u\in\{w\}\cup NEG(w)}p(u|Context(w))
 \end{equation}
 推导得到目标函数
 \begin{equation}
-    \mathcal{L} = \sum_{w\in C}\{\log[\sigma(\Vector{x}_w^\mathrm{T}\theta^w)] + \sum_{u\in NEG(w)}\log[\sigma(-\Vector{x}_w^\mathrm{T}\theta^u)\}
+    \mathcal{L} = \sum_{w\in C}\{\log[\sigma(\Vector{x}_w^\mathrm{T}\theta^w)] + \sum_{u\in NEG(w)}\log[\sigma(-\Vector{x}_w^\mathrm{T}\theta^u)]\}
 \end{equation}
 用来训练模型参数。
 
@@ -276,7 +276,7 @@ RNN普遍存在这种问题，从结果上看，这会导致RNN难以处理前�
 GRU存在多种变体，区别在于计算每个门层输出是否使用之前的隐藏状态和偏置。
 本节仅介绍使用隐藏状态计算门层输出的GRU，如图\ref{fig:GRU}所示。
 其最主要的特征是
-\begin{enumerate}
+\begin{enumerate}[leftmargin=*]
     \item 融合了cell状态和隐藏层输出
     \item 融合了输入门和遗忘门
 \end{enumerate}

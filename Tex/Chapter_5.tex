@@ -92,7 +92,7 @@
 \end{verbatim}
 
 预处理过程中根据已经标注好的词性，按照节\ref{subsec:combine_word_char}思路进行如下处理：
-\begin{enumerate}[\indent(1)]
+\begin{enumerate}[leftmargin=*]
     \item 去除特殊符号、空标注等非法字符
     \item 去除l、i等与本文任务无关的组合词标签
     \item 合并组合命名实体，根据词性标签nr, ns, nt分别标注命名实体及其组成元素。标注模式如\ref{tab:label_schema}所示
@@ -108,7 +108,7 @@
     \bicaption{标注模式}{Label schema}
     \begin{tabular}{ll}
         \toprule
-            BIO标签集\\
+        \multicolumn{2}{c}{BIO标签集}\\
         \midrule
         B-PER & 人名起始及单字（词）人名 \\
         I-PER & 人名中间字词 \\
@@ -163,6 +163,7 @@
 \begin{table}[H]
     \centering
     \bicaption{实验一：以字嵌入作为特征}{Experiment 1: char-embedding}
+    \small
     \begin{tabular}{cccccccccc}
         \toprule
             \multirow{2}{*}{Cell} &\multicolumn{3}{c}{PERSON} &\multicolumn{3}{c}{LOC} &\multicolumn{3}{c}{ORG}\\
@@ -252,7 +253,7 @@
 因此分词对人名识别结果的影响要大于地名、机构名。
 
 在基于词嵌入的命名实体识别错误的结果中，主要存在下列几类错误：
-\begin{enumerate}[\indent(1)]
+\begin{enumerate}[leftmargin=*]
     \item 由于姓氏、名字切分导致的识别不完整，如\verb|宋学斌|，由于错误地切分为\verb|宋学|和\verb|斌|而未能识别。
     \item 由于词性歧义产生的识别错误，如人名\verb|严明|也做形容词在训练语料中出现。
     \item 由缩写、别称导致的不能在预训练的词嵌入中获取原始特征导致的识别失败，如\verb|日外交部|，\verb|英国PPL|等。
@@ -288,7 +289,7 @@
 在使用词性特征时，结果没有提升，反而在人名、地名上均有较大下降。本文认为引入词性后，词性特征强化了分词错误，与词嵌入类似，人名识别受到了很大干扰。
 
 基于字词向量结合命名实体识别存在的错误也包括：
-\begin{enumerate}[\indent(1)]
+\begin{enumerate}[leftmargin=*]
     \item 词边界难以确定，如
         \begin{center}
             \verb|维也纳多瑙河/LOC 畔的联合国城|
