@@ -276,9 +276,9 @@ n元语言模型直接针对语料库中词前缀序列与词的转移概率建�
 与n元语言模型的情况类似，HMM也存在自身的局限性。
 HMM模型建立在三个基本假设上，即
 \begin{enumerate}[leftmargin=*]
-    \item 马尔可夫假设(Markov assumption)：后一时刻隐藏的状态仅与当前隐藏时刻的状态相关
-    \item 稳定性假设(Stationarity assummption)：状态转移概率与转移发生的时刻无关
-    \item 输出独立假设(Output independence assumption)：给定当前时刻的状态时，当前时刻的观测输出与之前的观测输出都无关
+    \item[(1)] 马尔可夫假设(Markov assumption)：后一时刻隐藏的状态仅与当前隐藏时刻的状态相关
+    \item[(2)] 稳定性假设(Stationarity assummption)：状态转移概率与转移发生的时刻无关
+    \item[(3)] 输出独立假设(Output independence assumption)：给定当前时刻的状态时，当前时刻的观测输出与之前的观测输出都无关
 \end{enumerate}
 基于上述三个假设，HMM的局限性体现在三个方面。
 首先，马尔可夫性要求，模型某一时刻的隐藏状态只与其前一时刻的状态相关，这一基本假设限制了模型既不能考虑序列后文的信息，也不能考虑距离较远的前文信息；
